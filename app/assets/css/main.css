@@ -118,4 +118,7 @@
   body {
     @apply bg-black text-white antialiased;
   }
+    button {
+        @apply cursor-pointer;
+    }
 }

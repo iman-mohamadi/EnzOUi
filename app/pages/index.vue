@@ -48,11 +48,6 @@
         </div>
       </section>
 
-      <div class="relative w-full max-w-4xl mx-auto mt-10 p-4 border border-white/10 rounded-xl bg-zinc-900/50 backdrop-blur">
-        <div class="aspect-video flex items-center justify-center text-zinc-500 italic">
-          EnzOUi Collection Preview
-        </div>
-      </div>
 
     </main>
 
