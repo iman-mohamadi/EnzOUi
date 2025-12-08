@@ -1,14 +1,24 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { WheelPicker, WheelPickerWrapper } from '@/components/ui/wheel-picker'
+import CodeBlock from '@/components/ui/CodeBlock.vue'
+
 definePageMeta({ layout: 'docs' })
 
 // Demo Data
 const hours = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: (i + 1).toString().padStart(2, '0') }))
 const val = ref(9)
 
-const installCode = `npx shadcn-vue@latest add https://iman-mohamadi.github.io/vue-wheel-picker/registry/wheel-picker.json`
+// Updated Install Code for display
+const installCode = `npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json`
+
 const usageCode = `<script setup>
 import { WheelPicker, WheelPickerWrapper } from '@/components/ui/wheel-picker'
-const hours = [{ value: 1, label: '01' }, { value: 2, label: '02' }]
+
+const hours = Array.from({ length: 12 }, (_, i) => ({
+  value: i + 1,
+  label: (i + 1).toString().padStart(2, '0')
+}))
 <\/script>
 
 <template>
