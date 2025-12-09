@@ -46,6 +46,15 @@ const config = useAppConfig().enzoui
             </div>
           </div>
 
+          <div>
+            <h4 class="mb-2 rounded-md px-2 py-1 text-sm font-semibold">Backgrounds</h4>
+            <div class="grid grid-flow-row auto-rows-max text-sm gap-1">
+              <NuxtLink to="/docs/backgrounds/ambient-grid" class="group flex w-full items-center rounded-md border border-transparent px-2 py-1 text-zinc-400 hover:text-white hover:bg-white/5" active-class="text-white bg-white/10 font-medium">
+                Ambient Grid
+              </NuxtLink>
+            </div>
+          </div>
+
         </nav>
       </aside>
 

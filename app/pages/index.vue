@@ -4,10 +4,9 @@ import { WheelPicker, WheelPickerWrapper } from '@/components/ui/wheel-picker'
 import { ArrowRight, Github, Copy, Check } from 'lucide-vue-next'
 
 // --- Hero Demo Data ---
-// Playful options for the live demo
-const adj = ['Modern', 'Playful', 'Robust', 'Fast'].map(l => ({ value: l, label: l }))
-const nouns = ['UI', 'Components', 'Library', 'Tools'].map(l => ({ value: l, label: l }))
-const framework = ['for Vue', 'for Nuxt', 'for Web', 'for You'].map(l => ({ value: l, label: l }))
+const adj = ['Modern', 'Playful', 'Robust', 'Fast', 'Sleek'].map(l => ({ value: l, label: l }))
+const nouns = ['UI', 'Components', 'Library', 'Tools', 'Kit'].map(l => ({ value: l, label: l }))
+const framework = ['for Vue', 'for Nuxt', 'for Web', 'for You', 'for App'].map(l => ({ value: l, label: l }))
 
 const state = ref({
   adj: 'Playful',
@@ -69,7 +68,7 @@ const copyInstall = () => {
 
           <p class="mx-auto lg:mx-0 max-w-2xl text-lg text-zinc-400 leading-relaxed">
             A collection of beautifully crafted, copy-paste components for Vue & Nuxt.
-            Built on top of Shadcn & Reka UI. Accessible, customizable, and ready to use.
+            Built on top of Shadcn & Reka UI.
           </p>
 
           <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
@@ -99,16 +98,35 @@ const copyInstall = () => {
             <div class="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 opacity-20 blur-2xl animate-pulse"></div>
             <div class="absolute -bottom-5 -left-5 h-24 w-24 rounded-full bg-blue-500 opacity-20 blur-2xl"></div>
 
-            <div class="relative w-full h-64 rounded-2xl border border-white/5 bg-black/50 overflow-hidden shadow-inner">
-              <div class="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-black to-transparent z-10 pointer-events-none"></div>
-              <div class="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black to-transparent z-10 pointer-events-none"></div>
+            <div class="relative w-full h-64 rounded-2xl border border-white/5 bg-black/80 overflow-hidden shadow-inner flex items-center justify-center">
 
-              <div class="absolute top-1/2 left-4 right-4 h-12 -translate-y-1/2 rounded-lg bg-white/5 border border-white/10 z-0"></div>
+              <div class="absolute top-1/2 left-4 right-4 h-[50px] -translate-y-1/2 rounded-lg bg-white/10 border border-white/10 z-0 pointer-events-none"></div>
 
-              <WheelPickerWrapper class="h-full px-6">
-                <WheelPicker v-model="state.adj" :options="adj" infinite class="flex-1" />
-                <WheelPicker v-model="state.noun" :options="nouns" infinite class="flex-1" />
-                <WheelPicker v-model="state.framework" :options="framework" infinite class="flex-1" />
+              <WheelPickerWrapper class="h-full w-full px-6 z-10">
+                <WheelPicker
+                    v-model="state.adj"
+                    :options="adj"
+                    infinite
+                    class="flex-1"
+                    :option-item-height="50"
+                    :visible-count="14"
+                />
+                <WheelPicker
+                    v-model="state.noun"
+                    :options="nouns"
+                    infinite
+                    class="flex-1"
+                    :option-item-height="50"
+                    :visible-count="14"
+                />
+                <WheelPicker
+                    v-model="state.framework"
+                    :options="framework"
+                    infinite
+                    class="flex-1"
+                    :option-item-height="50"
+                    :visible-count="14"
+                />
               </WheelPickerWrapper>
             </div>
 
@@ -129,49 +147,20 @@ const copyInstall = () => {
       <section class="container mx-auto px-6 py-24 border-t border-white/5">
         <div class="text-center mb-16 space-y-4">
           <h2 class="text-3xl font-bold tracking-tight md:text-4xl">Why EnzOUi?</h2>
-          <p class="text-zinc-400 max-w-2xl mx-auto">
-            Not just another library. A collection of meticulously designed primitives.
-          </p>
+          <p class="text-zinc-400 max-w-2xl mx-auto">Not just another library. A collection of meticulously designed primitives.</p>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/20 p-8 hover:bg-zinc-900/40 transition-all duration-300 hover:-translate-y-1">
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="relative z-10">
-              <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-400 ring-1 ring-purple-500/20 group-hover:scale-110 transition-transform duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-              </div>
-              <h3 class="text-xl font-bold mb-3 text-white">Copy & Paste</h3>
-              <p class="text-zinc-400 leading-relaxed">
-                No heavy npm packages or black boxes. Just copy the source code directly into your project. You own the code.
-              </p>
-            </div>
+            <h3 class="text-xl font-bold mb-3 text-white">Copy & Paste</h3>
+            <p class="text-zinc-400 leading-relaxed">No heavy npm packages or black boxes. Just copy the source code directly into your project.</p>
           </div>
-
           <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/20 p-8 hover:bg-zinc-900/40 transition-all duration-300 hover:-translate-y-1">
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="relative z-10">
-              <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20 group-hover:scale-110 transition-transform duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="4" r="1"/><path d="m18 19 1-7-6 1"/><path d="m5 8 3-3 5.5 3-2.36 4.68"/><path d="M8 14v9"/><path d="M15.42 9.75 16.63 22"/><path d="M6.14 9.75 5 19.5"/></svg>
-              </div>
-              <h3 class="text-xl font-bold mb-3 text-white">Fully Accessible</h3>
-              <p class="text-zinc-400 leading-relaxed">
-                Built on top of unstyled primitives (Reka UI). Keyboard navigation, ARIA attributes, and focus management are handled for you.
-              </p>
-            </div>
+            <h3 class="text-xl font-bold mb-3 text-white">Accessible</h3>
+            <p class="text-zinc-400 leading-relaxed">Built on top of unstyled primitives (Reka UI) for full keyboard and screen reader support.</p>
           </div>
-
           <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/20 p-8 hover:bg-zinc-900/40 transition-all duration-300 hover:-translate-y-1">
-            <div class="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div class="relative z-10">
-              <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-500/10 text-pink-400 ring-1 ring-pink-500/20 group-hover:scale-110 transition-transform duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
-              </div>
-              <h3 class="text-xl font-bold mb-3 text-white">Themable</h3>
-              <p class="text-zinc-400 leading-relaxed">
-                Styled with Tailwind CSS. Design tokens map to your theme configurations. It looks like your app, not a generic library.
-              </p>
-            </div>
+            <h3 class="text-xl font-bold mb-3 text-white">Themable</h3>
+            <p class="text-zinc-400 leading-relaxed">Styled with Tailwind CSS. Design tokens map to your theme configurations automatically.</p>
           </div>
         </div>
       </section>
@@ -180,17 +169,8 @@ const copyInstall = () => {
 
     <footer class="border-t border-white/10 bg-black/50 backdrop-blur py-8">
       <div class="container mx-auto px-6 text-center">
-        <p class="text-sm text-zinc-500">
-          &copy; {{ new Date().getFullYear() }} EnzOUi. Built by <a href="https://github.com/iman-mohamadi" target="_blank" class="hover:text-white underline underline-offset-4">Iman Mohammadi</a>.
-        </p>
+        <p class="text-sm text-zinc-500">&copy; {{ new Date().getFullYear() }} EnzOUi.</p>
       </div>
     </footer>
   </div>
 </template>
-
-<style scoped>
-/* Ensure the page scrolls smoothly */
-html {
-  scroll-behavior: smooth;
-}
-</style>

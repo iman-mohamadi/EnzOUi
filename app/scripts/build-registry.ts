@@ -19,6 +19,13 @@ const COMPONENTS = [
             "WheelPicker.vue",
             "WheelPickerWrapper.vue",
         ]
+    },
+    {
+        name: "ambient-grid",
+        dependencies: ["clsx", "tailwind-merge"],
+        files: [
+            "AmbientGrid.vue"
+        ]
     }
 ];
 
