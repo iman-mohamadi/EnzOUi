@@ -26,6 +26,13 @@ const COMPONENTS = [
         files: [
             "AmbientGrid.vue"
         ]
+    },
+    {
+        name: "liquid-glass",
+        dependencies: [],
+        files: [
+            "LiquidGlass.vue"
+        ]
     }
 ];
 
