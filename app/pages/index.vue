@@ -43,7 +43,7 @@ const copyInstall = () => {
         <NuxtLink to="/docs/introduction" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
           Documentation
         </NuxtLink>
-        <a href="https://github.com/iman-mohamadi/vue-wheel-picker" target="_blank" class="text-zinc-400 hover:text-white transition-colors">
+        <a href="https://github.com/iman-mohamadi/EnzOUi" target="_blank" class="text-zinc-400 hover:text-white transition-colors">
           <Github class="h-5 w-5" />
         </a>
       </div>
@@ -98,34 +98,26 @@ const copyInstall = () => {
             <div class="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 opacity-20 blur-2xl animate-pulse"></div>
             <div class="absolute -bottom-5 -left-5 h-24 w-24 rounded-full bg-blue-500 opacity-20 blur-2xl"></div>
 
-            <div class="relative w-full h-64 rounded-2xl border border-white/5 bg-black/80 overflow-hidden shadow-inner flex items-center justify-center">
+            <div class="relative w-full rounded-2xl border border-white/5 bg-black/80 overflow-hidden shadow-inner flex items-center justify-center">
 
-              <div class="absolute top-1/2 left-4 right-4 h-[50px] -translate-y-1/2 rounded-lg bg-white/10 border border-white/10 z-0 pointer-events-none"></div>
-
-              <WheelPickerWrapper class="h-full w-full px-6 z-10">
+              <WheelPickerWrapper class="h-full w-full items-center px-6 z-10">
                 <WheelPicker
                     v-model="state.adj"
                     :options="adj"
                     infinite
                     class="flex-1"
-                    :option-item-height="50"
-                    :visible-count="14"
                 />
                 <WheelPicker
                     v-model="state.noun"
                     :options="nouns"
                     infinite
                     class="flex-1"
-                    :option-item-height="50"
-                    :visible-count="14"
                 />
                 <WheelPicker
                     v-model="state.framework"
                     :options="framework"
                     infinite
                     class="flex-1"
-                    :option-item-height="50"
-                    :visible-count="14"
                 />
               </WheelPickerWrapper>
             </div>
