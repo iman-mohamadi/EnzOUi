@@ -558,6 +558,9 @@ onUnmounted(() => {
       class="rwp-wrapper"
       :class="classNames?.highlightWrapper"
       :style="{ height: `${containerHeight}px` }"
+      tabindex="0"
+      role="listbox"
+      :aria-label="'Choose an option'"
   >
     <!-- 3D Wheel Items -->
     <ul ref="wheelItemsRef" class="rwp-options">
