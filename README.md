@@ -1,75 +1,27 @@
-# Nuxt Minimal Starter
+# EnzOUi
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+**Beautifully designed components built with Vue & Shadcn.**
 
-## Setup
+EnzOUi is not a component library. It's a collection of re-usable components that you can copy and paste into your apps. Accessible. Customizable. Open Source.
 
-Make sure to install dependencies:
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Vue](https://img.shields.io/badge/Vue.js-3.x-4FC08D?logo=vue.js)
+![Nuxt](https://img.shields.io/badge/Nuxt-4.x-00C58E?logo=nuxt.js)
 
-```bash
-# npm
-npm install
+## 🚀 Features
 
-# pnpm
-pnpm install
+- **Copy-Paste:** No heavy dependencies or black-box npm packages. You own the code.
+- **Accessible:** Built on top of `reka-ui` (formerly radix-vue) for full accessibility.
+- **Themable:** Designed to work seamlessly with Tailwind CSS and Shadcn's design tokens.
+- **Vue 3 & Nuxt Ready:** Optimized for the modern Vue ecosystem.
 
-# yarn
-yarn install
+## 📦 Installation
 
-# bun
-bun install
-```
+You can add components to your project using the `shadcn-vue` CLI or by manually copying the code.
 
-## Development Server
+### CLI (Recommended)
 
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
+Use the CLI to automatically install a component and its dependencies.
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+npx shadcn-vue@latest add [https://enzo-ui.vercel.app/registry/wheel-picker.json](https://enzo-ui.vercel.app/registry/wheel-picker.json)
