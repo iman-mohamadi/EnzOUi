@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { WheelPicker, WheelPickerWrapper } from '@/components/ui/wheel-picker'
-import CodeBlock from '@/components/ui/CodeBlock.vue'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-
 definePageMeta({ layout: 'docs' })
 
 const hours = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: (i + 1).toString().padStart(2, '0') }))

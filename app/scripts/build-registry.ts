@@ -17,9 +17,7 @@ const COMPONENTS = [
         dependencies: ["@vueuse/core"],
         files: [
             "WheelPicker.vue",
-            "WheelPickerItem.vue",
             "WheelPickerWrapper.vue",
-            // We will generate index.ts automatically, but if you have a custom one, list it here
         ]
     }
 ];
@@ -55,7 +53,6 @@ const build = () => {
         // 3. Generate index.ts content dynamically
         // (This replaces your manual indexContent string so it's always accurate)
         const indexContent = `export { default as WheelPicker } from './WheelPicker.vue'
-export { default as WheelPickerItem } from './WheelPickerItem.vue'
 export { default as WheelPickerWrapper } from './WheelPickerWrapper.vue'
 export type { WheelPickerOption } from './WheelPicker.vue'
 `;
