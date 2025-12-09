@@ -1,63 +1,196 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { WheelPicker, WheelPickerWrapper } from '@/components/ui/wheel-picker'
+import { ArrowRight, Github, Copy, Check } from 'lucide-vue-next'
+
+// --- Hero Demo Data ---
+// Playful options for the live demo
+const adj = ['Modern', 'Playful', 'Robust', 'Fast'].map(l => ({ value: l, label: l }))
+const nouns = ['UI', 'Components', 'Library', 'Tools'].map(l => ({ value: l, label: l }))
+const framework = ['for Vue', 'for Nuxt', 'for Web', 'for You'].map(l => ({ value: l, label: l }))
+
+const state = ref({
+  adj: 'Playful',
+  noun: 'Components',
+  framework: 'for Vue'
+})
+
+// --- Copy Install Command ---
+const copied = ref(false)
+const installCmd = 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json'
+
+const copyInstall = () => {
+  navigator.clipboard.writeText(installCmd)
+  copied.value = true
+  setTimeout(() => copied.value = false, 2000)
+}
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-black text-white">
+  <div class="min-h-screen bg-black text-white selection:bg-white/20 overflow-x-hidden">
 
-    <header class="container mx-auto flex h-14 items-center justify-between px-4 py-6">
-      <div class="font-bold text-xl tracking-tight">EnzOUi</div>
-      <div class="flex items-center gap-4">
-        <NuxtLink to="/docs/introduction">
-          <Button variant="ghost" class="text-zinc-400 hover:text-white">Documentation</Button>
+    <div class="fixed inset-0 z-0 pointer-events-none">
+      <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      <div class="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-purple-500 opacity-20 blur-[100px]"></div>
+      <div class="absolute right-20 bottom-20 -z-10 h-[200px] w-[200px] rounded-full bg-blue-500 opacity-20 blur-[100px]"></div>
+    </div>
+
+    <header class="container relative z-10 mx-auto flex h-16 items-center justify-between px-6">
+      <div class="flex items-center gap-2 font-bold text-xl tracking-tight select-none cursor-pointer">
+        <div class="h-6 w-6 rounded-md bg-white text-black flex items-center justify-center text-xs font-black">E</div>
+        EnzOUi
+      </div>
+      <div class="flex items-center gap-6">
+        <NuxtLink to="/docs/introduction" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
+          Documentation
         </NuxtLink>
-        <a href="https://github.com/iman-mohamadi/vue-wheel-picker" target="_blank">
-          <Button variant="outline" class="border-white/20 hover:bg-white/10">GitHub</Button>
+        <a href="https://github.com/iman-mohamadi/vue-wheel-picker" target="_blank" class="text-zinc-400 hover:text-white transition-colors">
+          <Github class="h-5 w-5" />
         </a>
       </div>
     </header>
 
-    <main class="flex-1 flex flex-col items-center justify-center text-center px-4">
-      <section class="max-w-[980px] space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
+    <main class="relative z-10 flex flex-col items-center">
 
-        <div class="mx-auto w-fit rounded-full border border-white/10 bg-zinc-900 px-3 py-1 text-xs font-medium text-zinc-400">
-          v1.0.0 Now Available
+      <section class="container mx-auto flex flex-col lg:flex-row items-center gap-12 px-6 py-16 lg:py-28">
+
+        <div class="flex-1 space-y-8 text-center lg:text-left">
+          <div class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-zinc-400 backdrop-blur-md">
+            <span class="mr-2 flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+            v1.0.0 Now Available
+          </div>
+
+          <h1 class="text-5xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl leading-[1.1]">
+            Make your UI <br class="hidden lg:block" />
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+              Pop & Roll.
+            </span>
+          </h1>
+
+          <p class="mx-auto lg:mx-0 max-w-2xl text-lg text-zinc-400 leading-relaxed">
+            A collection of beautifully crafted, copy-paste components for Vue & Nuxt.
+            Built on top of Shadcn & Reka UI. Accessible, customizable, and ready to use.
+          </p>
+
+          <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
+            <NuxtLink to="/docs/components/wheel-picker">
+              <Button size="lg" class="h-12 px-8 text-base bg-white text-black hover:bg-zinc-200 rounded-full font-bold transition-transform hover:scale-105 active:scale-95">
+                Browse Components
+                <ArrowRight class="ml-2 h-4 w-4" />
+              </Button>
+            </NuxtLink>
+
+            <div class="hidden sm:flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/50 p-1 pr-4 backdrop-blur-md transition-colors hover:border-white/20">
+              <div class="rounded-full bg-zinc-800 p-2">
+                <span class="text-zinc-400 text-xs font-mono">npm</span>
+              </div>
+              <code class="text-sm font-mono text-zinc-300">npx shadcn-vue@latest add...</code>
+              <button @click="copyInstall" class="ml-2 text-zinc-400 hover:text-white transition-colors" title="Copy install command">
+                <Check v-if="copied" class="h-4 w-4 text-green-500" />
+                <Copy v-else class="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <h1 class="text-3xl font-extrabold leading-tight tracking-tighter md:text-6xl lg:leading-[1.1]">
-          Beautifully designed components <br class="hidden sm:inline" />
-          built with Vue & Shadcn.
-        </h1>
+        <div class="flex-1 w-full max-w-md lg:max-w-full flex justify-center perspective-[2000px]">
+          <div class="relative w-full max-w-[400px] aspect-square rounded-[2.5rem] border border-white/10 bg-zinc-900/40 backdrop-blur-xl shadow-2xl p-8 flex flex-col items-center justify-center transform transition-transform hover:rotate-1 hover:scale-[1.01] duration-500">
 
-        <p class="mx-auto max-w-[750px] text-lg text-zinc-400 sm:text-xl">
-          Accessible. Customizable. Open Source.
-          <br>
-          Copy and paste into your apps.
-        </p>
+            <div class="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 opacity-20 blur-2xl animate-pulse"></div>
+            <div class="absolute -bottom-5 -left-5 h-24 w-24 rounded-full bg-blue-500 opacity-20 blur-2xl"></div>
 
-        <div class="flex justify-center gap-4">
-          <NuxtLink to="/docs/components/wheel-picker">
-            <Button size="lg" class="bg-white text-black hover:bg-zinc-200">
-              Get Started
-            </Button>
-          </NuxtLink>
-          <a href="https://github.com/iman-mohamadi/vue-wheel-picker" target="_blank">
-            <Button size="lg" variant="outline" class="border-white/20 text-white hover:bg-white/10">
-              <span class="mr-2">GitHub</span>
-            </Button>
-          </a>
+            <div class="relative w-full h-64 rounded-2xl border border-white/5 bg-black/50 overflow-hidden shadow-inner">
+              <div class="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-black to-transparent z-10 pointer-events-none"></div>
+              <div class="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black to-transparent z-10 pointer-events-none"></div>
+
+              <div class="absolute top-1/2 left-4 right-4 h-12 -translate-y-1/2 rounded-lg bg-white/5 border border-white/10 z-0"></div>
+
+              <WheelPickerWrapper class="h-full px-6">
+                <WheelPicker v-model="state.adj" :options="adj" infinite class="flex-1" />
+                <WheelPicker v-model="state.noun" :options="nouns" infinite class="flex-1" />
+                <WheelPicker v-model="state.framework" :options="framework" infinite class="flex-1" />
+              </WheelPickerWrapper>
+            </div>
+
+            <div class="mt-8 text-center space-y-1">
+              <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Interactive Demo</p>
+              <div class="h-8 flex items-center justify-center">
+                <p class="text-lg font-medium text-transparent bg-clip-text bg-gradient-to-r from-white to-zinc-400">
+                  {{ state.adj }} {{ state.noun }} {{ state.framework }}
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <section class="container mx-auto px-6 py-24 border-t border-white/5">
+        <div class="text-center mb-16 space-y-4">
+          <h2 class="text-3xl font-bold tracking-tight md:text-4xl">Why EnzOUi?</h2>
+          <p class="text-zinc-400 max-w-2xl mx-auto">
+            Not just another library. A collection of meticulously designed primitives.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/20 p-8 hover:bg-zinc-900/40 transition-all duration-300 hover:-translate-y-1">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="relative z-10">
+              <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-400 ring-1 ring-purple-500/20 group-hover:scale-110 transition-transform duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              </div>
+              <h3 class="text-xl font-bold mb-3 text-white">Copy & Paste</h3>
+              <p class="text-zinc-400 leading-relaxed">
+                No heavy npm packages or black boxes. Just copy the source code directly into your project. You own the code.
+              </p>
+            </div>
+          </div>
+
+          <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/20 p-8 hover:bg-zinc-900/40 transition-all duration-300 hover:-translate-y-1">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="relative z-10">
+              <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20 group-hover:scale-110 transition-transform duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="4" r="1"/><path d="m18 19 1-7-6 1"/><path d="m5 8 3-3 5.5 3-2.36 4.68"/><path d="M8 14v9"/><path d="M15.42 9.75 16.63 22"/><path d="M6.14 9.75 5 19.5"/></svg>
+              </div>
+              <h3 class="text-xl font-bold mb-3 text-white">Fully Accessible</h3>
+              <p class="text-zinc-400 leading-relaxed">
+                Built on top of unstyled primitives (Reka UI). Keyboard navigation, ARIA attributes, and focus management are handled for you.
+              </p>
+            </div>
+          </div>
+
+          <div class="group relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/20 p-8 hover:bg-zinc-900/40 transition-all duration-300 hover:-translate-y-1">
+            <div class="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="relative z-10">
+              <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-500/10 text-pink-400 ring-1 ring-pink-500/20 group-hover:scale-110 transition-transform duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+              </div>
+              <h3 class="text-xl font-bold mb-3 text-white">Themable</h3>
+              <p class="text-zinc-400 leading-relaxed">
+                Styled with Tailwind CSS. Design tokens map to your theme configurations. It looks like your app, not a generic library.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-
     </main>
 
-    <footer class="border-t border-white/10 py-6 md:py-0">
-      <div class="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row px-4">
-        <p class="text-center text-sm leading-loose text-zinc-400 md:text-left">
-          Built by <a href="https://iman-mohammadi.vercel.app/" target="_blank" class="font-medium underline underline-offset-4 hover:text-white">Iman Mohammadi</a>.
-          The source code is available on <a href="https://github.com/iman-mohamadi/vue-wheel-picker" target="_blank" class="font-medium underline underline-offset-4 hover:text-white">GitHub</a>.
+    <footer class="border-t border-white/10 bg-black/50 backdrop-blur py-8">
+      <div class="container mx-auto px-6 text-center">
+        <p class="text-sm text-zinc-500">
+          &copy; {{ new Date().getFullYear() }} EnzOUi. Built by <a href="https://github.com/iman-mohamadi" target="_blank" class="hover:text-white underline underline-offset-4">Iman Mohammadi</a>.
         </p>
       </div>
     </footer>
   </div>
 </template>
+
+<style scoped>
+/* Ensure the page scrolls smoothly */
+html {
+  scroll-behavior: smooth;
+}
+</style>
