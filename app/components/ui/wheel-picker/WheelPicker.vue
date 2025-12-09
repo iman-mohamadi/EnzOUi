@@ -1,323 +1,596 @@
-<script setup lang="ts" generic="T extends string | number">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted, provide } from 'vue';
-import { cn } from '@/lib/utils';
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 
-export interface WheelPickerOption<T = string | number> {
+// --- Types ---
+export type WheelPickerValue = string | number;
+
+export interface WheelPickerOption<T extends WheelPickerValue = string | number> {
   value: T;
-  label: string;
+  label: string | number;
 }
 
-const props = withDefaults(defineProps<{
-  modelValue?: T;
-  defaultValue?: T;
-  options?: WheelPickerOption<T>[];
+export interface WheelPickerClassNames {
+  optionItem?: string;
+  highlightWrapper?: string;
+  highlightItem?: string;
+}
+
+interface Props {
+  modelValue?: WheelPickerValue; // v-model
+  defaultValue?: WheelPickerValue;
+  options: WheelPickerOption[];
   infinite?: boolean;
   visibleCount?: number;
   dragSensitivity?: number;
   scrollSensitivity?: number;
-  itemHeight?: number;
-  class?: string;
-  overlayClass?: string;
-}>(), {
-  options: () => [],
+  optionItemHeight?: number;
+  classNames?: WheelPickerClassNames;
+}
+
+const props = withDefaults(defineProps<Props>(), {
   infinite: false,
   visibleCount: 20,
   dragSensitivity: 3,
   scrollSensitivity: 5,
-  itemHeight: 30,
+  optionItemHeight: 30,
+  options: () => [],
 });
 
-const emit = defineEmits<{ (e: 'update:modelValue', value: T): void; }>();
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: WheelPickerValue): void;
+  (e: 'change', value: WheelPickerValue): void;
+}>();
 
-// --- 1. Data Handling ---
-const childOptions = ref<WheelPickerOption<T>[]>([]);
-provide('wheel-picker-register', (opt: WheelPickerOption<T>) => childOptions.value.push(opt));
+// --- Constants ---
+const RESISTANCE = 0.3;
+const MAX_VELOCITY = 30;
 
-const optionsProp = computed(() => (props.options?.length ? props.options : childOptions.value));
+const easeOutCubic = (p: number) => Math.pow(p - 1, 3) + 1;
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
 
-const options = computed(() => {
-  if (!optionsProp.value?.length) return [];
-  if (!props.infinite) return optionsProp.value;
+// --- State & Refs ---
+const containerRef = ref<HTMLElement | null>(null);
+const wheelItemsRef = ref<HTMLElement | null>(null);
+const highlightListRef = ref<HTMLElement | null>(null);
 
-  // Pad the array to ensure smooth rotation
-  const result = [...optionsProp.value];
-  // Ensure we have enough items to fill the cylinder face
-  while (result.length < props.visibleCount) result.push(...optionsProp.value);
+const internalValue = ref<WheelPickerValue>(
+    props.modelValue ?? props.defaultValue ?? props.options[0]?.value
+);
+
+const scrollPos = ref(0);
+const moveId = ref(0);
+const isDragging = ref(false);
+const lastWheelTime = ref(0);
+
+const touchData = {
+  startY: 0,
+  yList: [] as [number, number][],
+  touchScroll: 0,
+  isClick: true,
+};
+
+let dragController: AbortController | null = null;
+
+// --- Computed Layouts ---
+const itemHeight = computed(() => props.optionItemHeight);
+const halfItemHeight = computed(() => itemHeight.value * 0.5);
+const safeVisibleCount = computed(() => Math.max(4, props.visibleCount));
+const itemAngle = computed(() => 360 / safeVisibleCount.value);
+const radius = computed(() => itemHeight.value / Math.tan((itemAngle.value * Math.PI) / 180));
+const containerHeight = computed(() => Math.round(radius.value * 2 + itemHeight.value * 0.25));
+const quarterCount = computed(() => safeVisibleCount.value >> 2);
+const baseDeceleration = computed(() => props.dragSensitivity * 10);
+const snapBackDeceleration = 10;
+
+const displayOptions = computed(() => {
+  if (!props.infinite) return props.options;
+
+  const result: WheelPickerOption[] = [];
+  const halfCount = Math.ceil(safeVisibleCount.value / 2);
+
+  if (props.options.length === 0) return result;
+
+  let tempOptions = [...props.options];
+  while (result.length < halfCount) {
+    result.push(...tempOptions);
+  }
   return result;
 });
 
-// --- 2. Geometry ---
-const measurements = computed(() => {
-  const count = props.visibleCount;
-  const height = props.itemHeight;
-  const itemAngle = 360 / count;
-  const radius = height / (2 * Math.tan(Math.PI / count));
-  return {
-    height,
-    itemAngle,
-    radius,
-    containerHeight: Math.round(radius * 2 + height * 0.25),
-    quarterCount: count / 4
-  };
-});
+const renderItems = computed(() => {
+  const items: Array<{
+    option: WheelPickerOption;
+    index: number;
+    angle: number;
+    key: string | number;
+    style: any
+  }> = [];
 
-// List 1: The 3D Rotating Background
-const wheelItems = computed(() => {
-  const { itemAngle, quarterCount } = measurements.value;
-  const src = options.value;
-  if (!src.length) return [];
+  const getStyle = (angle: number) => ({
+    top: `${-halfItemHeight.value}px`,
+    height: `${itemHeight.value}px`,
+    lineHeight: `${itemHeight.value}px`,
+    transform: `rotateX(${angle}deg) translateZ(${radius.value}px)`,
+    // IMPORTANT: visibility is handled by JS updateStyles
+  });
 
-  const items = src.map((item, i) => ({ ...item, index: i, angle: -itemAngle * i }));
+  displayOptions.value.forEach((option, index) => {
+    items.push({
+      option,
+      index,
+      angle: -itemAngle.value * index,
+      key: index,
+      style: getStyle(-itemAngle.value * index)
+    });
+  });
 
   if (props.infinite) {
-    for (let i = 0; i < quarterCount; i++) {
-      items.unshift({ ...src[src.length - 1 - (i % src.length)], index: -i - 1, angle: itemAngle * (i + 1) });
-      items.push({ ...src[i % src.length], index: i + src.length, angle: -itemAngle * (i + src.length) });
+    for (let i = 0; i < quarterCount.value; ++i) {
+      const prependIndex = -i - 1;
+      const appendIndex = i + displayOptions.value.length;
+
+      const preOption = displayOptions.value[displayOptions.value.length - i - 1];
+      items.unshift({
+        option: preOption,
+        index: prependIndex,
+        angle: itemAngle.value * (i + 1),
+        key: `pre-${i}`,
+        style: getStyle(itemAngle.value * (i + 1))
+      });
+
+      const postOption = displayOptions.value[i];
+      items.push({
+        option: postOption,
+        index: appendIndex,
+        angle: -itemAngle.value * appendIndex,
+        key: `post-${i}`,
+        style: getStyle(-itemAngle.value * appendIndex)
+      });
     }
   }
+
   return items;
 });
 
-// List 2: The Flat Overlay Foreground
-const highlightItems = computed(() => {
-  const src = options.value;
-  if (!src.length) return [];
-  const items = src.map((item, i) => ({ ...item, key: i }));
-  if (props.infinite) {
-    items.unshift({ ...src[src.length - 1], key: 'start-inf' as any });
-    items.push({ ...src[0], key: 'end-inf' as any });
+const renderHighlightItems = computed(() => {
+  const items = displayOptions.value.map((option, index) => ({
+    option,
+    key: index
+  }));
+
+  if (props.infinite && displayOptions.value.length > 0) {
+    const firstItem = displayOptions.value[0];
+    const lastItem = displayOptions.value[displayOptions.value.length - 1];
+    items.unshift({ option: lastItem, key: 'infinite-start' });
+    items.push({ option: firstItem, key: 'infinite-end' });
   }
+
   return items;
 });
 
-// --- 3. Physics & DOM ---
-const containerRef = ref<HTMLElement | null>(null);
-const wheelRef = ref<HTMLElement | null>(null);
-const highlightRef = ref<HTMLElement | null>(null);
-const localValue = ref<T>(props.modelValue ?? props.defaultValue ?? (optionsProp.value[0]?.value as T));
+const wheelSegmentPositions = computed(() => {
+  let positionAlongWheel = 0;
+  const degToRad = Math.PI / 180;
+  const segmentRanges: [number, number][] = [];
 
-let scrollRef = 0;
-let moveId = 0;
-let isDragging = false;
-let lastWheelTime = 0;
-let dragController: AbortController | null = null;
-const touchData = { startY: 0, yList: [] as [number, number][], touchScroll: 0, isClick: true };
+  for (let i = quarterCount.value - 1; i >= -quarterCount.value + 1; --i) {
+    const angle = i * itemAngle.value;
+    const segmentLength = itemHeight.value * Math.cos(angle * degToRad);
+    const start = positionAlongWheel;
+    positionAlongWheel += segmentLength;
+    segmentRanges.push([start, positionAlongWheel]);
+  }
+  return segmentRanges;
+});
 
-// --- 4. Logic ---
-const RESISTANCE = 0.4;
-const easeOutCubic = (p: number) => Math.pow(p - 1, 3) + 1;
-const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(val, max));
+// --- Core Logic ---
 
-const normalize = (val: number) => {
-  const len = options.value.length;
-  if (!len) return 0;
-  return props.infinite ? ((val % len) + len) % len : val;
+const normalizeScroll = (scroll: number) => {
+  const length = displayOptions.value.length;
+  if (length === 0) return 0;
+  return ((scroll % length) + length) % length;
 };
 
 const updateStyles = (scroll: number) => {
-  const { radius, itemAngle, quarterCount, height } = measurements.value;
-  const norm = normalize(scroll);
+  const normalizedScroll = props.infinite ? normalizeScroll(scroll) : scroll;
 
-  // 1. Update Background (3D Wheel)
-  if (wheelRef.value) {
-    wheelRef.value.style.transform = `translateZ(${-radius}px) rotateX(${itemAngle * norm}deg)`;
+  if (wheelItemsRef.value) {
+    const transform = `translateZ(${-radius.value}px) rotateX(${itemAngle.value * normalizedScroll}deg)`;
+    wheelItemsRef.value.style.transform = transform;
 
-    for (const li of wheelRef.value.children as any) {
-      if (!li.dataset.index) continue;
-      const idx = parseFloat(li.dataset.index);
-      const dist = Math.abs(idx - norm);
+    const children = wheelItemsRef.value.children;
+    for (let i = 0; i < children.length; i++) {
+      const li = children[i] as HTMLElement;
+      const indexStr = li.dataset.index;
+      if (indexStr !== undefined) {
+        const index = parseFloat(indexStr);
+        const distance = Math.abs(index - normalizedScroll);
 
-      // VISIBILITY LOGIC (The Ghost Fix)
-      // Hide if:
-      // 1. It is too far away (quarterCount)
-      // 2. OR It is exactly in the center (dist < 0.2)
-      //    We hide the center 3D item because the Overlay List will show it perfectly crisp.
-      //    This prevents them from overlapping and creating the "Double Text" effect.
-      if (dist > quarterCount || dist < 0.2) {
-        li.style.visibility = 'hidden';
-      } else {
-        li.style.visibility = 'visible';
+        // 1. Visibility Culling: Hide items far away for performance
+        const isVisible = distance <= quarterCount.value;
+        li.style.visibility = isVisible ? "visible" : "hidden";
+
+        // 2. Ghosting Fix:
+        // If the item is very close to the center (distance < 0.3),
+        // we hide the 3D version so it doesn't overlap with the Highlight version.
+        // We use opacity for a smoother transition than visibility.
+        if (isVisible) {
+          if (distance < 0.3) {
+            li.style.opacity = "0"; // Hide 3D item, show only Highlight item
+          } else {
+            li.style.opacity = "1"; // Show 3D item
+          }
+        }
       }
     }
   }
 
-  // 2. Update Foreground (Flat Overlay)
-  if (highlightRef.value) {
-    const hlScroll = props.infinite ? norm : clamp(scroll, 0, options.value.length - 1);
-    highlightRef.value.style.transform = `translateY(${-hlScroll * height}px)`;
+  if (highlightListRef.value) {
+    highlightListRef.value.style.transform = `translateY(${-normalizedScroll * itemHeight.value}px)`;
   }
 
-  return norm;
+  return normalizedScroll;
 };
 
-const animate = (start: number, end: number, duration: number, done?: () => void) => {
-  if (start === end || duration === 0) { updateStyles(start); return; }
+const scrollTo = (scroll: number) => {
+  return updateStyles(scroll);
+};
+
+const cancelAnimation = () => {
+  cancelAnimationFrame(moveId.value);
+};
+
+const animateScroll = (
+    startScroll: number,
+    endScroll: number,
+    duration: number,
+    onComplete?: () => void
+) => {
+  if (startScroll === endScroll || duration === 0) {
+    scrollTo(startScroll);
+    return;
+  }
+
   const startTime = performance.now();
-  const diff = end - start;
-  const tick = (now: number) => {
-    const elapsed = (now - startTime) / 1000;
+  const totalDistance = endScroll - startScroll;
+
+  const tick = (currentTime: number) => {
+    const elapsed = (currentTime - startTime) / 1000;
+
     if (elapsed < duration) {
-      scrollRef = updateStyles(start + easeOutCubic(elapsed / duration) * diff);
-      moveId = requestAnimationFrame(tick);
+      const progress = easeOutCubic(elapsed / duration);
+      scrollPos.value = scrollTo(startScroll + progress * totalDistance);
+      moveId.value = requestAnimationFrame(tick);
     } else {
-      scrollRef = updateStyles(end);
-      done?.();
+      cancelAnimation();
+      scrollPos.value = scrollTo(endScroll);
+      onComplete?.();
     }
   };
-  requestAnimationFrame(tick);
+
+  moveId.value = requestAnimationFrame(tick);
 };
 
-const snapToItem = (scroll: number) => {
-  const opts = options.value;
-  if (!opts.length) return;
+const selectByScroll = (scroll: number) => {
+  const normalized = normalizeScroll(scroll) | 0;
+  const length = displayOptions.value.length;
+  if (!length) return;
 
-  const norm = Math.round(scroll);
-  const target = props.infinite ? norm : clamp(norm, 0, opts.length - 1);
-  const dist = Math.abs(target - scrollRef);
-  const duration = Math.sqrt(dist / props.scrollSensitivity);
+  const boundedScroll = props.infinite
+      ? normalized
+      : Math.min(Math.max(normalized, 0), length - 1);
 
-  cancelAnimationFrame(moveId);
-  animate(scrollRef, target, duration, () => {
-    const finalIndex = props.infinite ? ((target % opts.length) + opts.length) % opts.length : target;
-    const selected = opts[finalIndex];
-    if (selected && selected.value !== localValue.value) {
-      localValue.value = selected.value;
-      emit('update:modelValue', selected.value);
+  if (!props.infinite && boundedScroll !== scroll) return;
+
+  scrollPos.value = scrollTo(boundedScroll);
+
+  const selectedOption = displayOptions.value[scrollPos.value];
+  if (selectedOption) {
+    internalValue.value = selectedOption.value;
+    emit('update:modelValue', selectedOption.value);
+    emit('change', selectedOption.value);
+  }
+};
+
+const selectByValue = (val: WheelPickerValue) => {
+  const index = displayOptions.value.findIndex((opt) => opt.value === val);
+  if (index === -1) {
+    if (displayOptions.value.length > 0) {
+      scrollPos.value = scrollTo(0);
     }
+    return;
+  }
+  cancelAnimation();
+  scrollPos.value = scrollTo(index);
+};
+
+const scrollByStep = (step: number) => {
+  const startScroll = scrollPos.value;
+  let endScroll = startScroll + step;
+
+  if (props.infinite) {
+    endScroll = Math.round(endScroll);
+  } else {
+    endScroll = clamp(Math.round(endScroll), 0, displayOptions.value.length - 1);
+  }
+
+  const distance = Math.abs(endScroll - startScroll);
+  if (distance === 0) return;
+
+  const duration = Math.sqrt(distance / props.scrollSensitivity);
+
+  cancelAnimation();
+  animateScroll(startScroll, endScroll, duration, () => {
+    selectByScroll(scrollPos.value);
   });
 };
 
-// --- 5. Interaction ---
-const handleDrag = (e: MouseEvent | TouchEvent) => {
-  if (!containerRef.value?.contains(e.target as Node)) return;
+// --- Input Handlers ---
+
+const handleWheelItemClick = (clientY: number) => {
+  const container = containerRef.value;
+  if (!container) return;
+
+  const { top } = container.getBoundingClientRect();
+  const clickOffsetY = clientY - top;
+
+  const clickedSegmentIndex = wheelSegmentPositions.value.findIndex(
+      ([start, end]) => clickOffsetY >= start && clickOffsetY <= end
+  );
+
+  if (clickedSegmentIndex === -1) return;
+
+  const stepsToScroll = (quarterCount.value - clickedSegmentIndex - 1) * -1;
+  scrollByStep(stepsToScroll);
+};
+
+const updateScrollDuringDrag = (e: MouseEvent | TouchEvent) => {
+  const currentY = (window.TouchEvent && e instanceof TouchEvent ? e.touches?.[0]?.clientY : (e as MouseEvent).clientY) || 0;
+
+  if (touchData.isClick) {
+    const dragThreshold = 5;
+    if (Math.abs(currentY - touchData.startY) > dragThreshold) {
+      touchData.isClick = false;
+    }
+  }
+
+  touchData.yList.push([currentY, Date.now()]);
+  if (touchData.yList.length > 5) touchData.yList.shift();
+
+  const dragDelta = (touchData.startY - currentY) / itemHeight.value;
+  let nextScroll = scrollPos.value + dragDelta;
+
+  if (props.infinite) {
+    nextScroll = normalizeScroll(nextScroll);
+  } else {
+    const maxIndex = displayOptions.value.length;
+    if (nextScroll < 0) nextScroll *= RESISTANCE;
+    else if (nextScroll > maxIndex) nextScroll = maxIndex + (nextScroll - maxIndex) * RESISTANCE;
+  }
+
+  touchData.touchScroll = updateStyles(nextScroll);
+};
+
+const handleDragMoveEvent = (event: Event) => {
+  const e = event as MouseEvent | TouchEvent;
+  if (!isDragging.value && !containerRef.value?.contains(e.target as Node) && e.target !== containerRef.value) {
+    return;
+  }
   if (e.cancelable) e.preventDefault();
-  isDragging = true;
-  touchData.startY = (e instanceof MouseEvent ? e.clientY : e.touches[0].clientY);
-  touchData.yList = [[touchData.startY, Date.now()]];
-  touchData.touchScroll = scrollRef;
+  if (displayOptions.value.length) updateScrollDuringDrag(e);
+};
+
+const initiateDragGesture = (event: MouseEvent | TouchEvent) => {
+  isDragging.value = true;
+  dragController = new AbortController();
+  const { signal } = dragController;
+  const passiveOpts = { signal, passive: false } as AddEventListenerOptions;
+
+  containerRef.value?.addEventListener('touchmove', handleDragMoveEvent, passiveOpts);
+  document.addEventListener('mousemove', handleDragMoveEvent, passiveOpts);
+
+  const startY = (window.TouchEvent && event instanceof TouchEvent ? event.touches?.[0]?.clientY : (event as MouseEvent).clientY) || 0;
+
+  touchData.startY = startY;
+  touchData.yList = [[startY, Date.now()]];
+  touchData.touchScroll = scrollPos.value;
   touchData.isClick = true;
-  cancelAnimationFrame(moveId);
 
-  const move = (ev: MouseEvent | TouchEvent) => {
-    if (ev.cancelable) ev.preventDefault();
-    const y = (ev instanceof MouseEvent ? ev.clientY : ev.touches[0].clientY);
-    if (Math.abs(y - touchData.startY) > 5) touchData.isClick = false;
-    touchData.yList.push([y, Date.now()]);
-
-    const delta = (touchData.startY - y) / props.itemHeight;
-    let next = scrollRef + delta;
-
-    if (!props.infinite) {
-      const max = options.value.length - 1;
-      if (next < 0) next *= RESISTANCE;
-      else if (next > max) next = max + (next - max) * RESISTANCE;
-    }
-    touchData.touchScroll = updateStyles(next);
-  };
-
-  const end = (ev: MouseEvent | TouchEvent) => {
-    if (ev.cancelable) ev.preventDefault();
-    document.removeEventListener('mousemove', move);
-    document.removeEventListener('mouseup', end);
-    document.removeEventListener('touchmove', move);
-    document.removeEventListener('touchend', end);
-    isDragging = false;
-
-    if (touchData.isClick) {
-      if (containerRef.value) {
-        const rect = containerRef.value.getBoundingClientRect();
-        const clickY = touchData.startY - rect.top - (rect.height / 2);
-        const itemIdx = Math.round(clickY / props.itemHeight);
-        snapToItem(scrollRef + itemIdx);
-      }
-      return;
-    }
-
-    scrollRef = touchData.touchScroll;
-    const list = touchData.yList;
-    const last = list[list.length - 1];
-    const prev = list[list.length - 2];
-
-    if (last && prev) {
-      const timeDiff = last[1] - prev[1];
-      const dist = prev[0] - last[0];
-      const velocity = timeDiff > 0 ? (dist / props.itemHeight * 1000) / timeDiff : 0;
-      const keepGoing = velocity * 0.2;
-      snapToItem(scrollRef + keepGoing);
-    } else {
-      snapToItem(scrollRef);
-    }
-  };
-
-  document.addEventListener('mousemove', move, { passive: false });
-  document.addEventListener('mouseup', end);
-  document.addEventListener('touchmove', move, { passive: false });
-  document.addEventListener('touchend', end);
+  cancelAnimation();
 };
 
-const handleWheel = (e: WheelEvent) => {
-  if (!containerRef.value?.contains(e.target as Node)) return;
-  e.preventDefault();
-  if (Date.now() - lastWheelTime < 50) return;
-  lastWheelTime = Date.now();
-  snapToItem(scrollRef + Math.sign(e.deltaY));
+const decelerateAndAnimateScroll = (initialVelocity: number) => {
+  scrollPos.value = touchData.touchScroll;
+
+  const currentScroll = scrollPos.value;
+  let targetScroll = currentScroll;
+  let deceleration = initialVelocity > 0 ? -baseDeceleration.value : baseDeceleration.value;
+  let duration = 0;
+
+  if (props.infinite) {
+    duration = Math.abs(initialVelocity / deceleration);
+    const scrollDistance = initialVelocity * duration + 0.5 * deceleration * duration * duration;
+    targetScroll = Math.round(currentScroll + scrollDistance);
+  } else if (currentScroll < 0 || currentScroll > displayOptions.value.length - 1) {
+    const target = clamp(currentScroll, 0, displayOptions.value.length - 1);
+    const scrollDistance = currentScroll - target;
+    deceleration = snapBackDeceleration;
+    duration = Math.sqrt(Math.abs(scrollDistance / deceleration));
+    initialVelocity = deceleration * duration;
+    initialVelocity = currentScroll > 0 ? -initialVelocity : initialVelocity;
+    targetScroll = target;
+  } else {
+    duration = Math.abs(initialVelocity / deceleration);
+    const scrollDistance = initialVelocity * duration + 0.5 * deceleration * duration * duration;
+    targetScroll = Math.round(currentScroll + scrollDistance);
+    targetScroll = clamp(targetScroll, 0, displayOptions.value.length - 1);
+
+    const adjustedDistance = targetScroll - currentScroll;
+    duration = Math.sqrt(Math.abs(adjustedDistance / deceleration));
+  }
+
+  animateScroll(currentScroll, targetScroll, duration, () => {
+    selectByScroll(scrollPos.value);
+  });
+
+  // Fallback sync
+  selectByScroll(scrollPos.value);
 };
 
-const init = () => {
-  const idx = options.value.findIndex(o => o.value === localValue.value);
-  if (idx !== -1) {
-    scrollRef = idx;
-    updateStyles(idx);
+const finalizeDragAndStartInertiaScroll = () => {
+  dragController?.abort();
+  dragController = null;
+  isDragging.value = false;
+
+  if (touchData.isClick) {
+    handleWheelItemClick(touchData.startY);
+    return;
+  }
+
+  const yList = touchData.yList;
+  let velocity = 0;
+
+  if (yList.length > 1) {
+    const [startY, startTime] = yList[yList.length - 2] || [0, 0];
+    const [endY, endTime] = yList[yList.length - 1] || [0, 0];
+    const timeDiff = endTime - startTime;
+    if (timeDiff > 0) {
+      const distance = startY - endY;
+      const velocityPerSecond = ((distance / itemHeight.value) * 1000) / timeDiff;
+      const direction = velocityPerSecond > 0 ? 1 : -1;
+      velocity = Math.min(Math.abs(velocityPerSecond), MAX_VELOCITY) * direction;
+    }
+  }
+
+  decelerateAndAnimateScroll(velocity);
+};
+
+const handleDragStartEvent = (event: Event) => {
+  const e = event as MouseEvent | TouchEvent;
+  const isTargetValid = !!containerRef.value?.contains(e.target as Node) || e.target === containerRef.value;
+
+  if ((isDragging.value || isTargetValid) && e.cancelable) {
+    e.preventDefault();
+    if (displayOptions.value.length) initiateDragGesture(e);
   }
 };
 
-watch(() => props.modelValue, (v) => {
-  if (v !== undefined && v !== localValue.value) {
-    localValue.value = v;
-    init();
+const handleDragEndEvent = (event: Event) => {
+  const e = event as MouseEvent | TouchEvent;
+  if (!displayOptions.value.length) return;
+
+  const isTargetValid = !!containerRef.value?.contains(e.target as Node) || e.target === containerRef.value;
+
+  if ((isDragging.value || isTargetValid) && e.cancelable) {
+    e.preventDefault();
+    finalizeDragAndStartInertiaScroll();
+  }
+};
+
+const handleWheelEvent = (event: Event) => {
+  const e = event as WheelEvent;
+  if (!displayOptions.value.length || !containerRef.value) return;
+
+  const isTargetValid = containerRef.value.contains(e.target as Node) || e.target === containerRef.value;
+  if ((isDragging.value || isTargetValid) && e.cancelable) {
+    e.preventDefault();
+
+    const now = Date.now();
+    if (now - lastWheelTime.value < 100) return;
+
+    const direction = Math.sign(e.deltaY);
+    if (!direction) return;
+
+    lastWheelTime.value = now;
+    scrollByStep(direction);
+  }
+};
+
+// --- Lifecycle & Watchers ---
+
+watch(() => props.modelValue, (newVal) => {
+  if (newVal !== undefined && newVal !== internalValue.value) {
+    internalValue.value = newVal;
+    selectByValue(newVal);
   }
 });
 
-watch(options, () => { nextTick(init); });
+watch(() => props.options, () => {
+  nextTick(() => {
+    selectByValue(internalValue.value);
+  });
+}, { deep: true });
 
 onMounted(() => {
-  nextTick(init);
-  if (containerRef.value) {
-    containerRef.value.addEventListener('mousedown', handleDrag);
-    containerRef.value.addEventListener('touchstart', handleDrag, { passive: false });
-    containerRef.value.addEventListener('wheel', handleWheel, { passive: false });
-  }
+  const container = containerRef.value;
+  if (!container) return;
+
+  const opts = { passive: false };
+  container.addEventListener("touchstart", handleDragStartEvent, opts);
+  container.addEventListener("touchend", handleDragEndEvent, opts);
+  container.addEventListener("wheel", handleWheelEvent, opts);
+  document.addEventListener("mousedown", handleDragStartEvent, opts);
+  document.addEventListener("mouseup", handleDragEndEvent, opts);
+
+  // Initial selection
+  nextTick(() => {
+    selectByValue(internalValue.value);
+  });
 });
 
 onUnmounted(() => {
-  if (containerRef.value) {
-    containerRef.value.removeEventListener('mousedown', handleDrag);
-    containerRef.value.removeEventListener('touchstart', handleDrag);
-    containerRef.value.removeEventListener('wheel', handleWheel);
+  const container = containerRef.value;
+  if (container) {
+    container.removeEventListener("touchstart", handleDragStartEvent);
+    container.removeEventListener("touchend", handleDragEndEvent);
+    container.removeEventListener("wheel", handleWheelEvent);
   }
+  document.removeEventListener("mousedown", handleDragStartEvent);
+  document.removeEventListener("mouseup", handleDragEndEvent);
+  dragController?.abort();
+  cancelAnimation();
 });
 </script>
 
 <template>
-  <div ref="containerRef" :class="cn($props.class)" :style="{ height: `${measurements.containerHeight}px` }" data-rwp>
-    <slot />
-
-    <ul ref="wheelRef" data-rwp-options>
-      <li v-for="item in wheelItems" :key="`${item.index}-${item.value}`" :data-index="item.index" data-rwp-option
-          :style="{
-          top: `${measurements.height * -0.5}px`,
-          height: `${measurements.height}px`,
-          lineHeight: `${measurements.height}px`,
-          transform: `rotateX(${item.angle}deg) translateZ(${measurements.radius}px)`,
-        }">
-        {{ item.label }}
+  <div
+      ref="containerRef"
+      class="rwp-wrapper"
+      :class="classNames?.highlightWrapper"
+      :style="{ height: `${containerHeight}px` }"
+  >
+    <!-- 3D Wheel Items -->
+    <ul ref="wheelItemsRef" class="rwp-options">
+      <li
+          v-for="item in renderItems"
+          :key="item.key"
+          :data-index="item.index"
+          class="rwp-option-item"
+          :class="classNames?.optionItem"
+          :style="item.style"
+      >
+        {{ item.option.label }}
       </li>
     </ul>
 
-    <div :class="cn(props.overlayClass)" data-rwp-highlight-wrapper :style="{ height: `${measurements.height}px` }">
-      <ul ref="highlightRef" data-rwp-highlight-list :style="{ top: props.infinite ? `-${measurements.height}px` : undefined }">
-        <li v-for="item in highlightItems" :key="`${item.key}`" data-rwp-highlight-item :style="{ height: `${measurements.height}px`, lineHeight: `${measurements.height}px` }">
-          {{ item.label }}
+    <!-- Center Highlight Overlay -->
+    <div
+        class="rwp-highlight-wrapper"
+        :style="{ height: `${itemHeight}px`, lineHeight: `${itemHeight}px` }"
+    >
+      <ul
+          ref="highlightListRef"
+          class="rwp-highlight-list"
+          :style="{ top: infinite ? `${-itemHeight}px` : undefined }"
+      >
+        <li
+            v-for="item in renderHighlightItems"
+            :key="item.key"
+            class="rwp-highlight-item"
+            :class="classNames?.highlightItem"
+            :style="{ height: `${itemHeight}px` }"
+        >
+          {{ item.option.label }}
         </li>
       </ul>
     </div>
@@ -325,65 +598,107 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Resets */
-ul, li { margin: 0; padding: 0; list-style: none; }
+/* Reset & Base */
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 
-[data-rwp] {
+li {
+  margin: 0;
+  padding: 0;
+}
+
+.rwp-wrapper {
   position: relative;
   overflow: hidden;
-  flex: 1;
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+  justify-content: space-between;
+  perspective: 2000px;
+  user-select: none;
+  /* Mask Image for fade effect - keeps 3D look */
+  mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 20%,
+      black 80%,
+      transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 20%,
+      black 80%,
+      transparent 100%
+  );
   cursor: grab;
 }
-[data-rwp]:active {
+
+.rwp-wrapper:active {
   cursor: grabbing;
 }
 
-[data-rwp-highlight-wrapper] {
+/* Center Highlight Bar */
+.rwp-highlight-wrapper {
   position: absolute;
+  overflow: hidden;
   top: 50%;
   width: 100%;
   transform: translateY(-50%);
+  font-size: 1rem;
+  font-weight: 500;
   pointer-events: none;
-  z-index: 10;
-  border-top: 1px solid hsl(var(--border));
-  border-bottom: 1px solid hsl(var(--border));
-  background: hsl(var(--background) / 0.1);
-  overflow: hidden; /* Ensures we only see one item from the flat list */
+  /* Use alpha border for dark mode compatibility */
+  border-top: 1px solid rgba(128,128,128,0.2);
+  border-bottom: 1px solid rgba(128,128,128,0.2);
 }
 
-[data-rwp-highlight-list] {
+.rwp-highlight-list {
   position: absolute;
   width: 100%;
+  left: 0;
 }
 
-[data-rwp-highlight-item] {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600; /* Bold for active item */
-  color: hsl(var(--foreground));
-}
-
-[data-rwp-options] {
+/* 3D Rotating List */
+.rwp-options {
   position: absolute;
   top: 50%;
   left: 0;
+  display: block;
   width: 100%;
   height: 0;
+  margin: 0 auto;
+  -webkit-font-smoothing: subpixel-antialiased;
+  will-change: transform;
+  backface-visibility: hidden;
   transform-style: preserve-3d;
 }
 
-[data-rwp-option] {
+.rwp-option-item {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
+  -webkit-font-smoothing: subpixel-antialiased;
+  will-change: visibility;
+  font-size: 0.875rem;
+  /* Safer color for unselected items in dark mode */
+  color: #888;
   display: flex;
   align-items: center;
   justify-content: center;
-  backface-visibility: hidden;
-  color: hsl(var(--muted-foreground));
-  font-size: 0.875rem;
-  will-change: transform, visibility;
+  /* Transition opacity for smoother ghosting fix */
+  transition: opacity 0.1s linear;
+}
+
+.rwp-highlight-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Adapts to parent color (Dark Mode friendly) */
+  color: currentColor;
 }
 </style>

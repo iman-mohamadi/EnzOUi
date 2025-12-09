@@ -145,7 +145,7 @@ const customCode = `<template>
           <ClientOnly>
             <div class="w-48">
               <WheelPickerWrapper>
-                <WheelPicker v-model="fruitState" :options="fruits" />
+                <WheelPicker v-model="fruitState" :options="fruits" infinite/>
               </WheelPickerWrapper>
             </div>
           </ClientOnly>
