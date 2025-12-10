@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { WheelPicker, WheelPickerWrapper } from '@/components/ui/wheel-picker'
 import { ArrowRight, Github, Copy, Check } from 'lucide-vue-next'
 
 // --- Hero Demo Data ---
@@ -15,6 +13,7 @@ const state = ref({
 })
 
 // --- Copy Install Command ---
+const config = useAppConfig().enzoui
 const copied = ref(false)
 const installCmd = 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/wheel-picker.json'
 
@@ -35,15 +34,15 @@ const copyInstall = () => {
     </div>
 
     <header class="container relative z-10 mx-auto flex h-16 items-center justify-between px-6">
-      <div class="flex items-center gap-2 font-bold text-xl tracking-tight select-none cursor-pointer">
-        <div class="h-6 w-6 rounded-md bg-white text-black flex items-center justify-center text-xs font-black">E</div>
-        EnzOUi
-      </div>
+      <NuxtLink to="/" class="mr-6 flex items-center space-x-2 font-bold text-xl tracking-tight">
+        <div class="h-6 w-6 rounded bg-white text-black flex items-center justify-center text-xs font-black">E</div>
+        <span>{{ config?.name || 'EnzOUi' }}</span>
+      </NuxtLink>
       <div class="flex items-center gap-6">
         <NuxtLink to="/docs/introduction" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
           Documentation
         </NuxtLink>
-        <a href="https://github.com/iman-mohamadi/EnzOUi" target="_blank" class="text-zinc-400 hover:text-white transition-colors">
+        <a :href="config?.github" target="_blank" class="text-zinc-400 hover:text-white transition-colors">
           <Github class="h-5 w-5" />
         </a>
       </div>
