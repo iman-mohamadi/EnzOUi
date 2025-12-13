@@ -165,7 +165,7 @@ onMounted(async () => {
         orientation === 'vertical' ? 'flex-col items-stretch' : 'flex-row',
         variant === 'pill'
           ? 'p-1 bg-zinc-100/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl'
-          : 'border-b border-zinc-200 dark:border-zinc-800 p-0 rounded-none bg-transparent'
+          : 'p-0 rounded-none bg-transparent'
       ]"
         @mousedown="startDrag"
         @mouseleave="stopDrag"

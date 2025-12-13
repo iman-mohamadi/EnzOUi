@@ -1,35 +1,34 @@
+{
+type: uploaded file
+fileName: iman-mohamadi/enzoui/EnzOUi-9d8d577fcc01f73cbaec7f048461dd4e1a16ad85/app/pages/docs/components/code-block.vue
+fullContent:
 <script setup lang="ts">
+import { AnimatedTabs } from '@/components/ui/animated-tabs'
+import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 
-const simpleCode = `console.log("Hello EnzOUi")`
+const simpleCode = `function greet(name: string) {
+  return \`Hello, \${name}!\`;
+}
 
-const multiTabCode = [
-  {
-    label: 'npm',
-    code: 'npm install enzo-ui',
-    language: 'bash'
-  },
-  {
-    label: 'pnpm',
-    code: 'pnpm add enzo-ui',
-    language: 'bash'
-  },
-  {
-    label: 'bun',
-    code: 'bun add enzo-ui',
-    language: 'bash'
-  }
+console.log(greet('Enzo'));`
+
+const installCode = `npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/code-block.json`
+
+// Demo for Animated Tabs integration
+const frameworks = ['npm', 'pnpm', 'bun', 'yarn']
+const currentFramework = ref(0) // Index for v-model
+
+const commands = [
+  'npm install enzo-ui',
+  'pnpm add enzo-ui',
+  'bun add enzo-ui',
+  'yarn add enzo-ui'
 ]
 
-const usageCode = `<template>
-  <CodeBlock
-    :tabs="[
-      { label: 'Script', code: 'const x = 1', language: 'typescript' },
-      { label: 'Template', code: '<div>{{ x }}</div>', language: 'html' }
-    ]"
-  />
-</template>`
+// Animated Tabs Items
+const tabItems = frameworks.map(fw => ({ label: fw }))
 </script>
 
 <template>
@@ -38,39 +37,43 @@ const usageCode = `<template>
     <div class="space-y-4">
       <h1 class="scroll-m-20 text-4xl font-bold tracking-tight">Code Block</h1>
       <p class="text-xl text-zinc-400">
-        A beautiful, animated code block with tab support and syntax highlighting.
+        A content-aware code container with syntax highlighting and copy functionality.
       </p>
     </div>
 
-    <Tabs default-value="preview" class="space-y-4">
-      <TabsList class="w-fit bg-zinc-900/50 border border-zinc-800">
-        <TabsTrigger value="preview" class="px-4">Preview</TabsTrigger>
-        <TabsTrigger value="code" class="px-4">Code</TabsTrigger>
-      </TabsList>
+    <div class="space-y-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Floating Button</h2>
+      <p class="text-zinc-400">The default style places the copy button in a floating container at the top right.</p>
+      <CodeBlock :code="simpleCode" lang="typescript" />
+    </div>
 
-      <TabsContent value="preview" class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4 p-10 space-y-8">
+    <div class="space-y-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">With Filename</h2>
+      <p class="text-zinc-400">Adding a <code>file-name</code> prop automatically creates a header bar.</p>
+      <CodeBlock :code="installCode" lang="bash" file-name="Terminal" />
+    </div>
 
-        <div class="space-y-2">
-          <h3 class="text-sm font-medium text-zinc-400">Simple</h3>
-          <CodeBlock :code="simpleCode" language="javascript" />
-        </div>
+    <div class="space-y-4">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">With Animated Tabs</h2>
+      <p class="text-zinc-400">
+        You can place <code>AnimatedTabs</code> directly inside the <code>#header</code> slot.
+      </p>
 
-        <div class="space-y-2">
-          <h3 class="text-sm font-medium text-zinc-400">Tabs</h3>
-          <CodeBlock :tabs="multiTabCode" />
-        </div>
-
-        <div class="space-y-2">
-          <h3 class="text-sm font-medium text-zinc-400">With Filename</h3>
-          <CodeBlock :code="simpleCode" language="javascript" file-name="example.js" />
-        </div>
-
-      </TabsContent>
-
-      <TabsContent value="code" class="mt-4">
-        <CodeBlock :code="usageCode" language="vue" />
-      </TabsContent>
-    </Tabs>
+      <CodeBlock
+          :code="commands[currentFramework]"
+          lang="bash"
+      >
+        <template #header>
+          <AnimatedTabs
+              v-model="currentFramework"
+              :items="tabItems"
+              variant="link"
+              :content="false"
+              class="w-fit px-1"
+          />
+        </template>
+      </CodeBlock>
+    </div>
 
     <div class="space-y-6">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
@@ -87,22 +90,40 @@ const usageCode = `<template>
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">code</td>
             <td class="px-4 py-3 font-mono text-xs">string</td>
-            <td class="px-4 py-3">The code content to display (for single tab mode).</td>
+            <td class="px-4 py-3">The raw code string to highlight.</td>
           </tr>
           <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">language</td>
+            <td class="px-4 py-3 font-mono text-purple-400">lang</td>
             <td class="px-4 py-3 font-mono text-xs">string</td>
-            <td class="px-4 py-3">Language for syntax highlighting (default: bash).</td>
+            <td class="px-4 py-3">Language for syntax highlighting (default: 'typescript').</td>
           </tr>
           <tr>
             <td class="px-4 py-3 font-mono text-purple-400">fileName</td>
             <td class="px-4 py-3 font-mono text-xs">string</td>
-            <td class="px-4 py-3">Optional filename to display in the header (if no tabs).</td>
+            <td class="px-4 py-3">Optional text to display in a header bar (if no header slot).</td>
           </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Slots</h2>
+      <div class="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
+        <table class="w-full text-sm text-left">
+          <thead class="border-b border-zinc-800 bg-zinc-900/50 text-zinc-400">
           <tr>
-            <td class="px-4 py-3 font-mono text-purple-400">tabs</td>
-            <td class="px-4 py-3 font-mono text-xs">CodeTab[]</td>
-            <td class="px-4 py-3">Array of objects with <code>label</code>, <code>code</code>, and <code>language</code>.</td>
+            <th class="px-4 py-3 font-medium">Slot</th>
+            <th class="px-4 py-3 font-medium">Description</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-zinc-800 text-zinc-300">
+          <tr>
+            <td class="px-4 py-3 font-mono text-purple-400">#header</td>
+            <td class="px-4 py-3">
+              Custom content for the header bar (e.g., <code>AnimatedTabs</code>).
+              Overrides <code>fileName</code>.
+            </td>
           </tr>
           </tbody>
         </table>
@@ -111,3 +132,4 @@ const usageCode = `<template>
 
   </div>
 </template>
+}
