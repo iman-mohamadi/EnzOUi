@@ -33,7 +33,19 @@ const COMPONENTS = [
         files: [
             "LiquidGlass.vue"
         ]
-    }
+    },
+    {
+        name: "code-block",
+        dependencies: ["highlight.js", "lucide-vue-next", "clsx", "tailwind-merge"],
+        files: [
+            "CodeBlock.vue"
+        ]
+    },
+    {
+        name: "animated-tabs",
+        dependencies: ["@vueuse/core", "clsx", "tailwind-merge"],
+        files: ["AnimatedTabs.vue"]
+    },
 ];
 
 const build = () => {

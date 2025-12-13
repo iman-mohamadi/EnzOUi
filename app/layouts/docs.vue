@@ -23,6 +23,8 @@ const navGroups = [
     items: [
       { label: 'Wheel Picker', to: '/docs/components/wheel-picker' },
       { label: 'Liquid Glass', to: '/docs/components/liquid-glass' },
+      { label: 'Code Block', to: '/docs/components/code-block' },
+      { label: 'Animated Tabs', to: '/docs/components/animated-tabs' },
     ]
   },
   {

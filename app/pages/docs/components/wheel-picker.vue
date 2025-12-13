@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { WheelPicker, WheelPickerWrapper } from '@/components/ui/wheel-picker'
-import CodeBlock from '@/components/ui/CodeBlock.vue'
-
 definePageMeta({ layout: 'docs' })
 
 // --- Demo Data: Time Picker ---

@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AmbientGrid } from '@/components/ui/ambient-grid'
-import CodeBlock from '@/components/ui/CodeBlock.vue'
-import { Button } from '@/components/ui/button'
 
 definePageMeta({ layout: 'docs' })
 

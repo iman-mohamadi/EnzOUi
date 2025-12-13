@@ -1,10 +1,4 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useDraggable, useElementBounding } from '@vueuse/core'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { LiquidGlass } from '@/components/ui/liquid-glass'
-import { AmbientGrid } from '@/components/ui/ambient-grid'
-import CodeBlock from '@/components/ui/CodeBlock.vue'
 import { GripVertical } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'docs' })

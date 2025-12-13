@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import CodeBlock from '@/components/ui/CodeBlock.vue'
-
 definePageMeta({ layout: 'docs' })
 
 // --- Commands for Frameworks ---
