@@ -1,3 +1,7 @@
+{
+type: uploaded file
+fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/code-block/CodeBlock.vue
+fullContent:
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Check, Copy } from 'lucide-vue-next'
@@ -29,16 +33,16 @@ const highlightedCode = computed(() => {
 <template>
   <div
       :class="cn(
-      'relative overflow-hidden rounded-xl border-5 border-border bg-white dark:bg-black',
+      'relative overflow-hidden rounded-xl border border-border bg-card',
       props.class
     )"
   >
     <div
         v-if="fileName || $slots.header"
-        class="flex items-center bg-border min-h-10"
+        class="flex items-center bg-muted border-b border-border min-h-10"
         :class="fileName ? 'px-1' : ''"
     >
-      <div class="flex-1 min-w-0 text-xs font-medium text-zinc-400 font-mono flex items-center">
+      <div class="flex-1 min-w-0 text-xs font-medium text-muted-foreground font-mono flex items-center">
         <slot name="header">
           {{ fileName }}
         </slot>
@@ -46,10 +50,10 @@ const highlightedCode = computed(() => {
     </div>
 
     <div class="absolute right-0 top-0 z-10">
-      <div :class="fileName || $slots.header ?  'bg-transparent' : 'bg-border'" class="rounded-bl-xl  p-1.5">
+      <div :class="fileName || $slots.header ?  'bg-transparent' : 'bg-muted/30 backdrop-blur-sm'" class="rounded-bl-xl  p-1.5">
         <button
             @click="copy()"
-            class="flex h-7 w-7 items-center justify-center rounded-md bg-transparent hover:bg-white/10 text-zinc-400 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            class="flex h-7 w-7 items-center justify-center rounded-md bg-transparent hover:bg-muted text-muted-foreground hover:text-foreground transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <Transition
               enter-active-class="transition duration-200 ease-out"
@@ -69,7 +73,7 @@ const highlightedCode = computed(() => {
 
     <div class="overflow-x-auto">
       <pre class="p-4"><code
-          :class="`language-${lang} text-sm font-mono leading-relaxed bg-transparent p-0 block min-w-full`"
+          :class="`language-${lang} text-sm font-mono leading-relaxed bg-transparent p-0 block min-w-full text-foreground`"
           v-html="highlightedCode"
       ></code></pre>
     </div>

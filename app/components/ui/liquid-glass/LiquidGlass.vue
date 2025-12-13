@@ -1,7 +1,11 @@
+{
+type: uploaded file
+fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/liquid-glass/LiquidGlass.vue
+fullContent:
 <template>
   <div
       ref="liquidGlassRoot"
-      class="effect"
+      class="effect bg-background"
       :class="[props.containerClass]"
       :style="baseStyle"
   >
@@ -140,7 +144,8 @@ let observer: ResizeObserver | null = null;
 
 const baseStyle = computed(() => {
   return {
-    "--frost": props.frost,
+    // We override the background opacity using the frost prop
+    "--tw-bg-opacity": props.frost,
     "border-radius": `${props.radius}px`,
   };
 });
@@ -221,7 +226,7 @@ onUnmounted(() => {
   opacity: 1;
   border-radius: inherit;
   backdrop-filter: url(#displacementFilter);
-  background: light-dark(hsl(0 0% 100% / var(--frost, 0)), hsl(0 0% 0% / var(--frost, 0)));
+  /* Background color is handled by Tailwind utility class + inline style opacity */
   box-shadow: inset 6px 6px 0px -6px rgba(255, 255, 255, 0.7),
   inset 0 0 8px 1px rgba(255, 255, 255, 0.7);
 }
@@ -241,3 +246,4 @@ onUnmounted(() => {
   pointer-events: none;
 }
 </style>
+}

@@ -1,3 +1,7 @@
+{
+type: uploaded file
+fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/wheel-picker/WheelPicker.vue
+fullContent:
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 
@@ -562,13 +566,12 @@ onUnmounted(() => {
       role="listbox"
       :aria-label="'Choose an option'"
   >
-    <!-- 3D Wheel Items -->
     <ul ref="wheelItemsRef" class="rwp-options">
       <li
           v-for="item in renderItems"
           :key="item.key"
           :data-index="item.index"
-          class="rwp-option-item"
+          class="rwp-option-item text-muted-foreground"
           :class="classNames?.optionItem"
           :style="item.style"
       >
@@ -576,7 +579,6 @@ onUnmounted(() => {
       </li>
     </ul>
 
-    <!-- Center Highlight Overlay -->
     <div
         class="rwp-highlight-wrapper"
         :style="{ height: `${itemHeight}px`, lineHeight: `${itemHeight}px` }"
@@ -589,7 +591,7 @@ onUnmounted(() => {
         <li
             v-for="item in renderHighlightItems"
             :key="item.key"
-            class="rwp-highlight-item"
+            class="rwp-highlight-item text-foreground"
             :class="classNames?.highlightItem"
             :style="{ height: `${itemHeight}px` }"
         >
@@ -654,9 +656,9 @@ li {
   font-size: 1rem;
   font-weight: 500;
   pointer-events: none;
-  /* Use alpha border for dark mode compatibility */
-  border-top: 1px solid rgba(128,128,128,0.2);
-  border-bottom: 1px solid rgba(128,128,128,0.2);
+  /* Use theme border color */
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .rwp-highlight-list {
@@ -688,8 +690,7 @@ li {
   -webkit-font-smoothing: subpixel-antialiased;
   will-change: visibility;
   font-size: 0.875rem;
-  /* Safer color for unselected items in dark mode */
-  color: #888;
+  /* Use theme muted foreground for unselected items */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -705,3 +706,4 @@ li {
   color: currentColor;
 }
 </style>
+}

@@ -1,6 +1,6 @@
 {
 type: uploaded file
-fileName: iman-mohamadi/enzoui/EnzOUi-9d8d577fcc01f73cbaec7f048461dd4e1a16ad85/app/pages/docs/components/code-block.vue
+fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/pages/docs/components/code-block.vue
 fullContent:
 <script setup lang="ts">
 import { AnimatedTabs } from '@/components/ui/animated-tabs'
@@ -29,6 +29,26 @@ const commands = [
 
 // Animated Tabs Items
 const tabItems = frameworks.map(fw => ({ label: fw }))
+
+// --- New Data for Preview/Code ---
+const previewTabs = [
+  { label: 'Preview', slot: 'preview' },
+  { label: 'Code', slot: 'code' }
+]
+
+const codeBlockUsage = `<script setup lang="ts">
+import { CodeBlock } from '@/components/ui/code-block'
+
+const code = \`function greet(name: string) {
+  return \\\`Hello, \\\${name}!\\\`;
+}
+
+console.log(greet('Enzo'));\`
+<\/script>
+
+<template>
+  <CodeBlock :code="code" lang="typescript" />
+</template>`
 </script>
 
 <template>
@@ -41,11 +61,20 @@ const tabItems = frameworks.map(fw => ({ label: fw }))
       </p>
     </div>
 
-    <div class="space-y-4">
-      <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Floating Button</h2>
-      <p class="text-zinc-400">The default style places the copy button in a floating container at the top right.</p>
-      <CodeBlock :code="simpleCode" lang="typescript" />
-    </div>
+    <AnimatedTabs :items="previewTabs" class="space-y-4">
+      <template #preview>
+        <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4 p-10 flex flex-col items-center justify-center min-h-[350px]">
+          <div class="w-full max-w-md">
+            <CodeBlock :code="simpleCode" lang="typescript" />
+          </div>
+        </div>
+      </template>
+      <template #code>
+        <div class="mt-4">
+          <CodeBlock :code="codeBlockUsage" lang="html" />
+        </div>
+      </template>
+    </AnimatedTabs>
 
     <div class="space-y-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">With Filename</h2>

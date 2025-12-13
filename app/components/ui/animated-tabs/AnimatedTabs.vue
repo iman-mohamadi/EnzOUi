@@ -1,3 +1,7 @@
+{
+type: uploaded file
+fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/animated-tabs/AnimatedTabs.vue
+fullContent:
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { cn } from '@/lib/utils'
@@ -164,7 +168,7 @@ onMounted(async () => {
         :class="[
         orientation === 'vertical' ? 'flex-col items-stretch' : 'flex-row',
         variant === 'pill'
-          ? 'p-1 bg-zinc-100/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl'
+          ? 'p-1 bg-muted/50 border border-border rounded-xl'
           : 'p-0 rounded-none bg-transparent'
       ]"
         @mousedown="startDrag"
@@ -176,8 +180,8 @@ onMounted(async () => {
           class="absolute top-0 left-0 transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)]"
           :class="[
           variant === 'pill'
-            ? 'bg-white dark:bg-zinc-800 shadow-sm rounded-lg'
-            : 'bg-zinc-900 dark:bg-white rounded-t-sm z-20'
+            ? 'bg-background shadow-sm rounded-lg border border-border/50'
+            : 'bg-primary rounded-t-sm z-20'
         ]"
           :style="markerStyle"
       ></div>
@@ -191,10 +195,10 @@ onMounted(async () => {
           @click="handleTabClick(index)"
           class="relative z-10 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap flex-shrink-0"
           :class="[
-          variant === 'pill' ? 'rounded-lg' : 'rounded-none hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50',
+          variant === 'pill' ? 'rounded-lg' : 'rounded-none hover:bg-muted/50',
           currentNumericIndex === index
-            ? 'text-zinc-950 dark:text-white'
-            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200',
+            ? 'text-foreground'
+            : 'text-muted-foreground hover:text-foreground',
           item.disabled && 'opacity-50 cursor-not-allowed'
         ]"
       >
@@ -231,3 +235,4 @@ onMounted(async () => {
   scrollbar-width: none;
 }
 </style>
+}

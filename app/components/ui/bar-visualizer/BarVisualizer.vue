@@ -1,3 +1,7 @@
+{
+type: uploaded file
+fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/bar-visualizer/BarVisualizer.vue
+fullContent:
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, type Ref } from 'vue'
 import { cn } from '@/lib/utils'
@@ -42,6 +46,9 @@ const props = withDefaults(defineProps<Props>(), {
 // --- Audio Logic ---
 
 function createAudioAnalyser(stream: MediaStream, options: AudioAnalyserOptions = {}) {
+  // Ensure this only runs in the browser
+  if (typeof window === 'undefined') return { analyser: null, cleanup: () => {} }
+
   const AudioContext = window.AudioContext || (window as any).webkitAudioContext
   const audioContext = new AudioContext()
   const source = audioContext.createMediaStreamSource(stream)
@@ -86,12 +93,15 @@ function useMultibandVolume(
   let cleanupFn: (() => void) | null = null
 
   const stop = () => {
-    if (frameId) cancelAnimationFrame(frameId)
+    if (typeof window !== 'undefined' && frameId) cancelAnimationFrame(frameId)
     if (cleanupFn) cleanupFn()
     cleanupFn = null
   }
 
   watch(streamRef, (stream) => {
+    // SSR Guard
+    if (typeof window === 'undefined') return
+
     stop()
     if (!stream) {
       frequencyBands.value = new Array(bands).fill(0)
@@ -99,6 +109,8 @@ function useMultibandVolume(
     }
 
     const { analyser, cleanup } = createAudioAnalyser(stream, analyserOpts)
+    if (!analyser) return // Should not happen due to SSR guard above, but safe to check
+
     cleanupFn = cleanup
 
     const bufferLength = analyser.frequencyBinCount
@@ -222,6 +234,8 @@ const fakeVolumeBands = ref<number[]>(new Array(props.barCount).fill(0.2))
 let fakeAnimId: number | undefined
 
 const startFakeAnimation = () => {
+  if (typeof window === 'undefined') return // SSR Check
+
   let lastUpdate = 0
   const updateInterval = 50
   const startTime = Date.now() / 1000
@@ -245,6 +259,9 @@ const startFakeAnimation = () => {
 }
 
 watch(() => [props.demo, props.state, props.barCount], () => {
+  // SSR Guard for Watcher with immediate: true
+  if (typeof window === 'undefined') return
+
   if (fakeAnimId) cancelAnimationFrame(fakeAnimId)
 
   if (props.demo && (props.state === 'speaking' || props.state === 'listening')) {
@@ -255,7 +272,7 @@ watch(() => [props.demo, props.state, props.barCount], () => {
 }, { immediate: true })
 
 onUnmounted(() => {
-  if (fakeAnimId) cancelAnimationFrame(fakeAnimId)
+  if (typeof window !== 'undefined' && fakeAnimId) cancelAnimationFrame(fakeAnimId)
 })
 
 const volumeBands = computed(() => props.demo ? fakeVolumeBands.value : realVolumeBands.value)
@@ -301,3 +318,4 @@ const highlightedIndices = useBarAnimator(stateRef, barCountRef, intervalRef)
     ></div>
   </div>
 </template>
+}

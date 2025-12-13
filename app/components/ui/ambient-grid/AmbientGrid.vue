@@ -1,3 +1,7 @@
+{
+type: uploaded file
+fileName: iman-mohamadi/enzoui/EnzOUi-481682bc4f3f825c0131815bd4179e5da136063e/app/components/ui/ambient-grid/AmbientGrid.vue
+fullContent:
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useMouseInElement } from '@vueuse/core'
@@ -38,7 +42,6 @@ const container = ref<HTMLElement | null>(null)
 const { elementX, elementY, isOutside } = useMouseInElement(container)
 
 // Smoothly transition the spotlight position
-// We use a simple computed approach here, but CSS transitions handle the smoothing
 const spotlightPos = computed(() => {
   if (!props.interactive || isOutside.value) {
     return { x: '50%', y: '0%' } // Default position (top center)
@@ -50,7 +53,7 @@ const spotlightPos = computed(() => {
 <template>
   <div
       ref="container"
-      :class="cn('absolute inset-0 z-0 overflow-hidden bg-black', props.class)"
+      :class="cn('absolute inset-0 z-0 overflow-hidden bg-background', props.class)"
   >
     <div
         class="absolute inset-0 z-0 transition-opacity duration-700"
@@ -64,7 +67,7 @@ const spotlightPos = computed(() => {
     >
       <div
           class="absolute inset-0 h-full w-full opacity-[0.15]"
-          style="background-image: linear-gradient(to right, #808080 1px, transparent 1px), linear-gradient(to bottom, #808080 1px, transparent 1px); background-size: var(--grid-size) var(--grid-size);"
+          style="background-image: linear-gradient(to right, var(--border) 1px, transparent 1px), linear-gradient(to bottom, var(--border) 1px, transparent 1px); background-size: var(--grid-size) var(--grid-size);"
       ></div>
 
       <div
@@ -88,3 +91,4 @@ const spotlightPos = computed(() => {
     </div>
   </div>
 </template>
+}
