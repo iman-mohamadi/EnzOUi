@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import { AnimatedTabs } from '@/components/ui/animated-tabs'
 import { CodeBlock } from '@/components/ui/code-block'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import {
   User, Lock, Settings, Bell, Archive, Calendar,
@@ -36,6 +35,17 @@ const manyItems = [
 const controlledIndex = ref(0)
 const nextTab = () => controlledIndex.value = (controlledIndex.value + 1) % items.length
 const prevTab = () => controlledIndex.value = (controlledIndex.value - 1 + items.length) % items.length
+
+// --- Tabs Configuration ---
+const previewTabs = [
+  { label: 'Preview', slot: 'preview' },
+  { label: 'Code', slot: 'code' }
+]
+
+const installTabs = [
+  { label: 'CLI', slot: 'cli' },
+  { label: 'Manual', slot: 'manual' }
+]
 
 // --- Code Snippets ---
 const installCommands = {
@@ -97,37 +107,31 @@ const linkCode = `<template>
       </p>
     </div>
 
-    <Tabs default-value="preview" class="space-y-4">
-      <TabsList class="w-fit bg-zinc-900/50 border border-zinc-800">
-        <TabsTrigger value="preview" class="px-4">Preview</TabsTrigger>
-        <TabsTrigger value="code" class="px-4">Code</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="preview" class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4 p-10 flex flex-col items-center justify-center min-h-[350px]">
-        <div class="w-full max-w-md">
-          <AnimatedTabs :items="items" />
+    <AnimatedTabs :items="previewTabs" class="space-y-4">
+      <template #preview>
+        <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4 p-10 flex flex-col items-center justify-center min-h-[350px]">
+          <div class="w-full max-w-md">
+            <AnimatedTabs :items="items" />
+          </div>
         </div>
-      </TabsContent>
-
-      <TabsContent value="code" class="mt-4">
-        <CodeBlock :code="usageCode" lang="vue" />
-      </TabsContent>
-    </Tabs>
+      </template>
+      <template #code>
+        <div class="mt-4">
+          <CodeBlock :code="usageCode" lang="html" />
+        </div>
+      </template>
+    </AnimatedTabs>
 
     <div class="space-y-6">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <Tabs default-value="cli" class="space-y-6">
-        <TabsList class="w-fit bg-zinc-900/50 border border-zinc-800">
-          <TabsTrigger value="cli" class="px-4">CLI</TabsTrigger>
-          <TabsTrigger value="manual" class="px-4">Manual</TabsTrigger>
-        </TabsList>
-        <TabsContent value="cli">
-          <CodeBlock :code="installCommands.npm" lang="bash" />
-        </TabsContent>
-        <TabsContent value="manual">
-          <CodeBlock :code="installCommands.manual" lang="bash" />
-        </TabsContent>
-      </Tabs>
+      <AnimatedTabs :items="installTabs" class="space-y-6">
+        <template #cli>
+          <CodeBlock :code="installCommands.npm"  />
+        </template>
+        <template #manual>
+          <CodeBlock :code="installCommands.manual"  />
+        </template>
+      </AnimatedTabs>
     </div>
 
     <div class="space-y-12">
@@ -141,7 +145,7 @@ const linkCode = `<template>
           <div class="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6 flex justify-center">
             <AnimatedTabs :items="items" orientation="vertical" class="w-64" />
           </div>
-          <CodeBlock :code="verticalCode" lang="vue" class="my-0 h-full" />
+          <CodeBlock :code="verticalCode" lang="html" class="my-0 h-full" />
         </div>
       </div>
 
@@ -154,7 +158,7 @@ const linkCode = `<template>
             <AnimatedTabs :items="items" variant="link" />
           </div>
         </div>
-        <CodeBlock :code="linkCode" lang="vue" />
+        <CodeBlock :code="linkCode" lang="html" />
       </div>
 
       <div class="space-y-4">
@@ -175,7 +179,7 @@ const linkCode = `<template>
           </div>
           <p class="text-xs text-zinc-500 font-mono">Active Index: {{ controlledIndex }}</p>
         </div>
-        <CodeBlock :code="controlledCode" lang="vue" />
+        <CodeBlock :code="controlledCode" lang="html" />
       </div>
 
       <div class="space-y-4">

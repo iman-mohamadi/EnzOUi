@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { AmbientGrid } from '@/components/ui/ambient-grid'
+import { AnimatedTabs } from '@/components/ui/animated-tabs'
+import { CodeBlock } from '@/components/ui/code-block'
+import { Button } from '@/components/ui/button'
 
 definePageMeta({ layout: 'docs' })
 
@@ -9,6 +14,17 @@ const config = ref({
   color2: '#3b82f6', // blue
   interactive: true
 })
+
+// --- Tabs Config ---
+const previewTabs = [
+  { label: 'Preview', slot: 'preview' },
+  { label: 'Code', slot: 'code' }
+]
+
+const installTabs = [
+  { label: 'CLI', slot: 'cli' },
+  { label: 'Manual', slot: 'manual' }
+]
 
 // --- Code Snippets ---
 const installCommands = {
@@ -42,67 +58,63 @@ const usageCode = `<template>
       </p>
     </div>
 
-    <Tabs default-value="preview" class="space-y-4">
-      <div class="flex items-center justify-between">
-        <TabsList class="w-fit bg-zinc-900/50">
-          <TabsTrigger value="preview" class="px-4">Preview</TabsTrigger>
-          <TabsTrigger value="code" class="px-4">Code</TabsTrigger>
-        </TabsList>
+    <AnimatedTabs :items="previewTabs" class="space-y-4">
+      <template #preview>
+        <div class="relative overflow-hidden rounded-xl border border-zinc-800 bg-black mt-4">
+          <div class="absolute top-4 right-4 z-20">
+            <Button
+                size="sm"
+                variant="outline"
+                class="h-7 text-xs border-zinc-800"
+                @click="config.interactive = !config.interactive"
+            >
+              {{ config.interactive ? 'Disable' : 'Enable' }} Mouse
+            </Button>
+          </div>
 
-        <div class="flex items-center gap-2 text-xs">
-          <Button
-              size="sm"
-              variant="outline"
-              class="h-7 text-xs border-zinc-800"
-              @click="config.interactive = !config.interactive"
-          >
-            {{ config.interactive ? 'Disable' : 'Enable' }} Mouse
-          </Button>
-        </div>
-      </div>
+          <div class="relative flex h-[500px] w-full items-center justify-center">
+            <AmbientGrid
+                class="absolute inset-0"
+                :grid-size="config.gridSize"
+                :color1="config.color1"
+                :color2="config.color2"
+                :interactive="config.interactive"
+            />
 
-      <TabsContent value="preview" class="relative overflow-hidden rounded-xl border border-zinc-800 bg-black mt-4">
-        <div class="relative flex h-[500px] w-full items-center justify-center">
-
-          <AmbientGrid
-              class="absolute inset-0"
-              :grid-size="config.gridSize"
-              :color1="config.color1"
-              :color2="config.color2"
-              :interactive="config.interactive"
-          />
-
-          <div class="relative z-10 p-6 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-md space-y-4 w-64 shadow-2xl">
-            <div class="space-y-1">
-              <label class="text-xs font-medium text-zinc-400">Grid Size ({{ config.gridSize }}px)</label>
-              <input type="range" v-model.number="config.gridSize" min="10" max="100" class="w-full accent-white" />
-            </div>
-
-            <div class="space-y-1">
-              <label class="text-xs font-medium text-zinc-400">Primary Color</label>
-              <div class="flex gap-2">
-                <button @click="config.color1 = '#a855f7'" class="w-6 h-6 rounded-full bg-purple-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
-                <button @click="config.color1 = '#ef4444'" class="w-6 h-6 rounded-full bg-red-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
-                <button @click="config.color1 = '#eab308'" class="w-6 h-6 rounded-full bg-yellow-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
+            <div class="relative z-10 p-6 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-md space-y-4 w-64 shadow-2xl">
+              <div class="space-y-1">
+                <label class="text-xs font-medium text-zinc-400">Grid Size ({{ config.gridSize }}px)</label>
+                <input type="range" v-model.number="config.gridSize" min="10" max="100" class="w-full accent-white" />
               </div>
-            </div>
 
-            <div class="space-y-1">
-              <label class="text-xs font-medium text-zinc-400">Secondary Color</label>
-              <div class="flex gap-2">
-                <button @click="config.color2 = '#3b82f6'" class="w-6 h-6 rounded-full bg-blue-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
-                <button @click="config.color2 = '#10b981'" class="w-6 h-6 rounded-full bg-emerald-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
-                <button @click="config.color2 = '#ec4899'" class="w-6 h-6 rounded-full bg-pink-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
+              <div class="space-y-1">
+                <label class="text-xs font-medium text-zinc-400">Primary Color</label>
+                <div class="flex gap-2">
+                  <button @click="config.color1 = '#a855f7'" class="w-6 h-6 rounded-full bg-purple-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
+                  <button @click="config.color1 = '#ef4444'" class="w-6 h-6 rounded-full bg-red-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
+                  <button @click="config.color1 = '#eab308'" class="w-6 h-6 rounded-full bg-yellow-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-xs font-medium text-zinc-400">Secondary Color</label>
+                <div class="flex gap-2">
+                  <button @click="config.color2 = '#3b82f6'" class="w-6 h-6 rounded-full bg-blue-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
+                  <button @click="config.color2 = '#10b981'" class="w-6 h-6 rounded-full bg-emerald-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
+                  <button @click="config.color2 = '#ec4899'" class="w-6 h-6 rounded-full bg-pink-500 ring-2 ring-offset-2 ring-offset-black ring-transparent focus:ring-white"></button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </TabsContent>
+      </template>
 
-      <TabsContent value="code" class="mt-4">
-        <CodeBlock :code="usageCode" lang="vue" />
-      </TabsContent>
-    </Tabs>
+      <template #code>
+        <div class="mt-4">
+          <CodeBlock :code="usageCode" lang="html" />
+        </div>
+      </template>
+    </AnimatedTabs>
 
     <div class="space-y-6">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Props</h2>
@@ -148,19 +160,17 @@ const usageCode = `<template>
 
     <div class="space-y-6">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
-      <Tabs default-value="cli" class="space-y-6">
-        <TabsList class="w-fit bg-zinc-900/50 border border-zinc-800">
-          <TabsTrigger value="cli" class="px-4">CLI</TabsTrigger>
-          <TabsTrigger value="manual" class="px-4">Manual</TabsTrigger>
-        </TabsList>
-        <TabsContent value="cli">
-          <CodeBlock :code="installCommands.npm" lang="bash" />
-        </TabsContent>
-        <TabsContent value="manual">
-          <p class="text-sm text-zinc-400 mb-2">Install dependencies:</p>
-          <CodeBlock :code="installCommands.manual" lang="bash" />
-        </TabsContent>
-      </Tabs>
+      <AnimatedTabs :items="installTabs" class="space-y-6">
+        <template #cli>
+          <CodeBlock :code="installCommands.npm"  />
+        </template>
+        <template #manual>
+          <div class="space-y-2">
+            <p class="text-sm text-zinc-400">Install dependencies:</p>
+            <CodeBlock :code="installCommands.manual"  />
+          </div>
+        </template>
+      </AnimatedTabs>
     </div>
 
   </div>

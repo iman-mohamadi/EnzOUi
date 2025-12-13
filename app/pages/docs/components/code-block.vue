@@ -50,7 +50,7 @@ const tabItems = frameworks.map(fw => ({ label: fw }))
     <div class="space-y-4">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">With Filename</h2>
       <p class="text-zinc-400">Adding a <code>file-name</code> prop automatically creates a header bar.</p>
-      <CodeBlock :code="installCode" lang="bash" file-name="Terminal" />
+      <CodeBlock :code="installCode"  file-name="Terminal" />
     </div>
 
     <div class="space-y-4">
@@ -61,7 +61,7 @@ const tabItems = frameworks.map(fw => ({ label: fw }))
 
       <CodeBlock
           :code="commands[currentFramework]"
-          lang="bash"
+
       >
         <template #header>
           <AnimatedTabs

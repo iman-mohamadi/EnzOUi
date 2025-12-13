@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { GripVertical } from 'lucide-vue-next'
+import { useElementBounding, useDraggable } from '@vueuse/core'
+import { LiquidGlass } from '@/components/ui/liquid-glass'
+import { AmbientGrid } from '@/components/ui/ambient-grid'
+import { AnimatedTabs } from '@/components/ui/animated-tabs'
+import { CodeBlock } from '@/components/ui/code-block'
 
 definePageMeta({ layout: 'docs' })
 
@@ -47,6 +52,24 @@ onMounted(() => {
   }, 100)
 })
 
+// --- Tabs Configuration ---
+const previewTabs = [
+  { label: 'Preview', slot: 'preview' },
+  { label: 'Code', slot: 'code' }
+]
+
+const installTabs = [
+  { label: 'CLI', slot: 'cli' },
+  { label: 'Manual', slot: 'manual' }
+]
+
+const packageManagerTabs = [
+  { label: 'npm', slot: 'npm' },
+  { label: 'pnpm', slot: 'pnpm' },
+  { label: 'yarn', slot: 'yarn' },
+  { label: 'bun', slot: 'bun' }
+]
+
 // --- Code Snippets ---
 const installCommands = {
   npm: 'npx shadcn-vue@latest add https://enzo-ui.vercel.app/registry/liquid-glass.json',
@@ -89,13 +112,8 @@ const usageCode = `<template>
       </p>
     </div>
 
-    <Tabs default-value="preview" class="space-y-4">
-      <TabsList class="w-fit bg-zinc-900/50">
-        <TabsTrigger value="preview" class="px-4">Preview</TabsTrigger>
-        <TabsTrigger value="code" class="px-4">Code</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="preview">
+    <AnimatedTabs :items="previewTabs" class="space-y-4">
+      <template #preview>
         <div class="relative rounded-xl border border-zinc-800 bg-zinc-950 mt-4 overflow-hidden h-[500px]">
 
           <div ref="containerEl" class="absolute inset-0 overflow-hidden select-none">
@@ -140,65 +158,51 @@ const usageCode = `<template>
             </div>
           </div>
         </div>
-      </TabsContent>
-
-      <TabsContent value="code" class="mt-4">
-        <CodeBlock :code="previewCode" lang="vue" file-name="Demo.vue" />
-      </TabsContent>
-    </Tabs>
+      </template>
+      <template #code>
+        <div class="mt-4">
+          <CodeBlock :code="previewCode" lang="html" file-name="Demo.vue" />
+        </div>
+      </template>
+    </AnimatedTabs>
 
     <div class="space-y-6">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">
         Installation
       </h2>
 
-      <Tabs default-value="cli" class="space-y-6">
-        <TabsList class="w-fit bg-zinc-900/50">
-          <TabsTrigger value="cli" class="px-4">CLI</TabsTrigger>
-          <TabsTrigger value="manual" class="px-4">Manual</TabsTrigger>
-        </TabsList>
+      <AnimatedTabs :items="installTabs" class="space-y-6">
+        <template #cli>
+          <AnimatedTabs :items="packageManagerTabs" variant="link" class="w-full">
+            <template #npm>
+              <CodeBlock :code="installCommands.npm"  class="mt-4" />
+            </template>
+            <template #pnpm>
+              <CodeBlock :code="installCommands.pnpm"  class="mt-4" />
+            </template>
+            <template #yarn>
+              <CodeBlock :code="installCommands.yarn"  class="mt-4" />
+            </template>
+            <template #bun>
+              <CodeBlock :code="installCommands.bun"  class="mt-4" />
+            </template>
+          </AnimatedTabs>
+        </template>
 
-        <TabsContent value="cli">
-          <Tabs default-value="npm" class="relative mr-auto w-full">
-            <TabsList class="justify-start rounded-none bg-transparent p-0 h-auto">
-              <TabsTrigger
-                  v-for="pm in ['npm', 'pnpm', 'yarn', 'bun']"
-                  :key="pm"
-                  :value="pm"
-                  class="
-                  relative bg-transparent
-                   font-mono text-zinc-400 shadow-none transition-none
-                  data-[state=active]:!bg-transparent
-                  data-[state=active]:border-white
-                  data-[state=active]:text-white
-                  data-[state=active]:shadow-none
-                  hover:text-zinc-200
-                "
-              >
-                {{ pm }}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent v-for="pm in ['npm', 'pnpm', 'yarn', 'bun']" :key="pm" :value="pm" class="mt-4">
-              <CodeBlock :code="installCommands[pm]" lang="bash" />
-            </TabsContent>
-          </Tabs>
-        </TabsContent>
-
-        <TabsContent value="manual">
+        <template #manual>
           <div class="mt-4 space-y-4">
             <p class="text-sm text-zinc-400">Copy the component code into your project.</p>
-            <CodeBlock :code="installCommands.manual" lang="bash" />
+            <CodeBlock :code="installCommands.manual"  />
           </div>
-        </TabsContent>
-      </Tabs>
+        </template>
+      </AnimatedTabs>
     </div>
 
     <div class="space-y-6">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">
         Usage
       </h2>
-      <CodeBlock :code="usageCode" lang="vue" />
+      <CodeBlock :code="usageCode" lang="html" />
     </div>
 
     <div class="space-y-6">

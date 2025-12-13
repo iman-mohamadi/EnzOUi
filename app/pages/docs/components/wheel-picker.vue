@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { WheelPicker, WheelPickerWrapper } from '@/components/ui/wheel-picker'
+import { AnimatedTabs } from '@/components/ui/animated-tabs'
+import { CodeBlock } from '@/components/ui/code-block'
+
 definePageMeta({ layout: 'docs' })
 
 // --- Demo Data: Time Picker ---
@@ -17,6 +22,24 @@ const dateState = ref({ month: 5, day: 15, year: 2025 })
 // --- Demo Data: Score Picker ---
 const scores = Array.from({ length: 11 }, (_, i) => ({ value: i, label: i.toString() }))
 const scoreState = ref(5)
+
+// --- Tabs Configuration ---
+const previewTabs = [
+  { label: 'Preview', slot: 'preview' },
+  { label: 'Code', slot: 'code' }
+]
+
+const installTabs = [
+  { label: 'CLI', slot: 'cli' },
+  { label: 'Manual', slot: 'manual' }
+]
+
+const packageManagerTabs = [
+  { label: 'npm', slot: 'npm' },
+  { label: 'pnpm', slot: 'pnpm' },
+  { label: 'yarn', slot: 'yarn' },
+  { label: 'bun', slot: 'bun' }
+]
 
 // --- Code Snippets ---
 const installCommands = {
@@ -103,83 +126,68 @@ const scores = Array.from({ length: 11 }, (_, i) => ({ value: i, label: i.toStri
       </p>
     </div>
 
-    <Tabs default-value="preview" class="space-y-4">
-      <TabsList class="w-fit bg-zinc-900/50">
-        <TabsTrigger value="preview" class="px-4">Preview</TabsTrigger>
-        <TabsTrigger value="code" class="px-4">Code</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="preview" class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4">
-        <div class="flex h-[400px] items-center justify-center p-10">
-          <ClientOnly>
-            <div class="relative flex h-56 w-64 flex-col items-center justify-center overflow-hidden rounded-3xl border border-zinc-800 bg-black shadow-2xl">
-              <div class="absolute top-0 left-1/2 z-20 h-6 w-24 -translate-x-1/2 rounded-b-xl bg-zinc-900"></div>
-              <WheelPickerWrapper class="w-full px-6">
-                <WheelPicker v-model="timeState.hour" :options="hours" infinite />
-                <WheelPicker v-model="timeState.minute" :options="minutes" infinite />
-                <WheelPicker v-model="timeState.ampm" :options="meridiem" />
-              </WheelPickerWrapper>
-            </div>
-          </ClientOnly>
+    <AnimatedTabs :items="previewTabs" class="space-y-4">
+      <template #preview>
+        <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4">
+          <div class="flex h-[400px] items-center justify-center p-10">
+            <ClientOnly>
+              <div class="relative flex h-56 w-64 flex-col items-center justify-center overflow-hidden rounded-3xl border border-zinc-800 bg-black shadow-2xl">
+                <div class="absolute top-0 left-1/2 z-20 h-6 w-24 -translate-x-1/2 rounded-b-xl bg-zinc-900"></div>
+                <WheelPickerWrapper class="w-full px-6">
+                  <WheelPicker v-model="timeState.hour" :options="hours" infinite />
+                  <WheelPicker v-model="timeState.minute" :options="minutes" infinite />
+                  <WheelPicker v-model="timeState.ampm" :options="meridiem" />
+                </WheelPickerWrapper>
+              </div>
+            </ClientOnly>
+          </div>
         </div>
-      </TabsContent>
-
-      <TabsContent value="code" class="mt-4">
-        <CodeBlock :code="previewCode" lang="vue" file-name="TimePicker.vue" />
-      </TabsContent>
-    </Tabs>
+      </template>
+      <template #code>
+        <div class="mt-4">
+          <CodeBlock :code="previewCode" lang="html" file-name="TimePicker.vue" />
+        </div>
+      </template>
+    </AnimatedTabs>
 
     <div class="space-y-6">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">
         Installation
       </h2>
 
-      <Tabs default-value="cli" class="space-y-6">
-        <TabsList class="w-fit bg-zinc-900/50">
-          <TabsTrigger value="cli" class="px-4">CLI</TabsTrigger>
-          <TabsTrigger value="manual" class="px-4">Manual</TabsTrigger>
-        </TabsList>
+      <AnimatedTabs :items="installTabs" class="space-y-6">
+        <template #cli>
+          <AnimatedTabs :items="packageManagerTabs" variant="link" class="w-full">
+            <template #npm>
+              <CodeBlock :code="installCommands.npm"  class="mt-4" />
+            </template>
+            <template #pnpm>
+              <CodeBlock :code="installCommands.pnpm"  class="mt-4" />
+            </template>
+            <template #yarn>
+              <CodeBlock :code="installCommands.yarn"  class="mt-4" />
+            </template>
+            <template #bun>
+              <CodeBlock :code="installCommands.bun"  class="mt-4" />
+            </template>
+          </AnimatedTabs>
+        </template>
 
-        <TabsContent value="cli">
-          <Tabs default-value="npm" class="relative mr-auto w-full">
-            <TabsList class="justify-start rounded-none bg-transparent p-0 h-auto">
-              <TabsTrigger
-                  v-for="pm in ['npm', 'pnpm', 'yarn', 'bun']"
-                  :key="pm"
-                  :value="pm"
-                  class="
-                  relative border-transparent bg-transparent
-                 font-mono text-zinc-400 shadow-none transition-none
-                  data-[state=active]:border-white data-[state=active]:text-white
-                  data-[state=active]:bg-transparent data-[state=active]:shadow-none
-                  hover:text-zinc-200
-                "
-              >
-                {{ pm }}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent v-for="pm in ['npm', 'pnpm', 'yarn', 'bun']" :key="pm" :value="pm" class="mt-1">
-              <CodeBlock :code="installCommands[pm]" lang="bash" />
-            </TabsContent>
-          </Tabs>
-        </TabsContent>
-
-        <TabsContent value="manual">
-          <CodeBlock :code="installCommands.manual" lang="bash" />
+        <template #manual>
+          <CodeBlock :code="installCommands.manual"  />
           <div class="mt-4 text-sm text-zinc-400">
             <p>1. Install dependencies.</p>
             <p>2. Copy the component code into your project.</p>
           </div>
-        </TabsContent>
-      </Tabs>
+        </template>
+      </AnimatedTabs>
     </div>
 
     <div class="space-y-6">
       <h2 class="scroll-m-20 text-2xl font-semibold tracking-tight">
         Usage
       </h2>
-      <CodeBlock :code="usageCode" lang="vue" />
+      <CodeBlock :code="usageCode" lang="html" />
     </div>
 
     <div class="space-y-12">
@@ -191,65 +199,61 @@ const scores = Array.from({ length: 11 }, (_, i) => ({ value: i, label: i.toStri
         <h3 class="text-xl font-semibold">Date Picker</h3>
         <p class="text-zinc-400 text-sm">Combine multiple pickers to create a cohesive date selector.</p>
 
-        <Tabs default-value="preview" class="space-y-4">
-          <TabsList class="w-fit bg-zinc-900/50">
-            <TabsTrigger value="preview" class="px-4">Preview</TabsTrigger>
-            <TabsTrigger value="code" class="px-4">Code</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="preview" class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4">
-            <div class="flex h-[350px] items-center justify-center p-10">
-              <ClientOnly>
-                <div class="w-80 rounded-xl border border-zinc-800 bg-black p-4">
-                  <WheelPickerWrapper>
-                    <WheelPicker v-model="dateState.month" :options="months" infinite class="flex-[2]" />
-                    <WheelPicker v-model="dateState.day" :options="days" infinite class="flex-1" />
-                    <WheelPicker v-model="dateState.year" :options="years" infinite class="flex-1" />
-                  </WheelPickerWrapper>
-                </div>
-              </ClientOnly>
+        <AnimatedTabs :items="previewTabs" class="space-y-4">
+          <template #preview>
+            <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4">
+              <div class="flex h-[350px] items-center justify-center p-10">
+                <ClientOnly>
+                  <div class="w-80 rounded-xl border border-zinc-800 bg-black p-4">
+                    <WheelPickerWrapper>
+                      <WheelPicker v-model="dateState.month" :options="months" infinite class="flex-[2]" />
+                      <WheelPicker v-model="dateState.day" :options="days" infinite class="flex-1" />
+                      <WheelPicker v-model="dateState.year" :options="years" infinite class="flex-1" />
+                    </WheelPickerWrapper>
+                  </div>
+                </ClientOnly>
+              </div>
             </div>
-          </TabsContent>
-
-          <TabsContent value="code" class="mt-4">
-            <CodeBlock :code="dateCode" lang="vue" file-name="DatePicker.vue" />
-          </TabsContent>
-        </Tabs>
+          </template>
+          <template #code>
+            <div class="mt-4">
+              <CodeBlock :code="dateCode" lang="html" file-name="DatePicker.vue" />
+            </div>
+          </template>
+        </AnimatedTabs>
       </div>
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold">Custom Styling</h3>
         <p class="text-zinc-400 text-sm">Use <code>class-names</code> to style the highlight bar and text.</p>
 
-        <Tabs default-value="preview" class="space-y-4">
-          <TabsList class="w-fit bg-zinc-900/50">
-            <TabsTrigger value="preview" class="px-4">Preview</TabsTrigger>
-            <TabsTrigger value="code" class="px-4">Code</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="preview" class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4">
-            <div class="flex h-[350px] items-center justify-center p-10">
-              <ClientOnly>
-                <div class="w-48 rounded-xl border border-zinc-800 bg-black p-4">
-                  <WheelPickerWrapper>
-                    <WheelPicker
-                        v-model="scoreState"
-                        :options="scores"
-                        :class-names="{
-                        highlightWrapper: 'border-blue-500/50 bg-blue-500/10 rounded-lg',
-                        highlightItem: 'text-blue-500 font-bold'
-                      }"
-                    />
-                  </WheelPickerWrapper>
-                </div>
-              </ClientOnly>
+        <AnimatedTabs :items="previewTabs" class="space-y-4">
+          <template #preview>
+            <div class="relative rounded-xl border border-zinc-800 bg-zinc-950/50 mt-4">
+              <div class="flex h-[350px] items-center justify-center p-10">
+                <ClientOnly>
+                  <div class="w-48 rounded-xl border border-zinc-800 bg-black p-4">
+                    <WheelPickerWrapper>
+                      <WheelPicker
+                          v-model="scoreState"
+                          :options="scores"
+                          :class-names="{
+                          highlightWrapper: 'border-blue-500/50 bg-blue-500/10 rounded-lg',
+                          highlightItem: 'text-blue-500 font-bold'
+                        }"
+                      />
+                    </WheelPickerWrapper>
+                  </div>
+                </ClientOnly>
+              </div>
             </div>
-          </TabsContent>
-
-          <TabsContent value="code" class="mt-4">
-            <CodeBlock :code="customCode" lang="vue" file-name="CustomPicker.vue" />
-          </TabsContent>
-        </Tabs>
+          </template>
+          <template #code>
+            <div class="mt-4">
+              <CodeBlock :code="customCode" lang="html" file-name="CustomPicker.vue" />
+            </div>
+          </template>
+        </AnimatedTabs>
       </div>
 
     </div>
