@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { Github, Book, Package, Image as ImageIcon } from 'lucide-vue-next'
+import { Github, Book, Package, Image as ImageIcon, AudioLines } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
 const config = useAppConfig().enzoui
@@ -25,6 +25,7 @@ const navGroups = [
       { label: 'Liquid Glass', to: '/docs/components/liquid-glass' },
       { label: 'Code Block', to: '/docs/components/code-block' },
       { label: 'Animated Tabs', to: '/docs/components/animated-tabs' },
+      { label: 'Bar Visualizer', to: '/docs/components/bar-visualizer' },
     ]
   },
   {

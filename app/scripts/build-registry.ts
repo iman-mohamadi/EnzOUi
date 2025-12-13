@@ -46,6 +46,13 @@ const COMPONENTS = [
         dependencies: ["@vueuse/core", "clsx", "tailwind-merge"],
         files: ["AnimatedTabs.vue"]
     },
+    {
+        name: "bar-visualizer",
+        dependencies: ["@vueuse/core", "clsx", "tailwind-merge"],
+        files: [
+            "BarVisualizer.vue"
+        ]
+    },
 ];
 
 const build = () => {
@@ -77,11 +84,30 @@ const build = () => {
         });
 
         // 3. Generate index.ts content dynamically
-        // (This replaces your manual indexContent string so it's always accurate)
-        const indexContent = `export { default as WheelPicker } from './WheelPicker.vue'
+        // Note: This logic assumes a simple default export or specific patterns.
+        // For components with types like BarVisualizer or WheelPicker, we might want custom index content
+        // or a smarter generator. For now, we follow the previous pattern but check for types.
+
+        let indexContent = '';
+
+        if (component.name === "wheel-picker") {
+            indexContent = `export { default as WheelPicker } from './WheelPicker.vue'
 export { default as WheelPickerWrapper } from './WheelPickerWrapper.vue'
 export type { WheelPickerOption } from './WheelPicker.vue'
 `;
+        } else if (component.name === "bar-visualizer") {
+            indexContent = `export { default as BarVisualizer } from './BarVisualizer.vue'
+export type { AgentState } from './BarVisualizer.vue'
+`;
+        } else if (component.name === "animated-tabs") {
+            indexContent = `export { default as AnimatedTabs } from './AnimatedTabs.vue'
+export type { TabItem } from './AnimatedTabs.vue'
+`;
+        } else {
+            // Default generation
+            indexContent = `export { default as ${toPascalCase(component.name)} } from './${component.files[0]}'
+`;
+        }
 
         fileList.push({
             path: `${component.name}/index.ts`,
@@ -104,5 +130,9 @@ export type { WheelPickerOption } from './WheelPicker.vue'
         console.log(`✅ Registry built: public/registry/${component.name}.json`);
     });
 };
+
+function toPascalCase(str: string) {
+    return str.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
+}
 
 build();
