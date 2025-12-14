@@ -60,6 +60,13 @@ const COMPONENTS = [
             "Tree.vue"
         ]
     },
+    {
+        name: "dotted-glow-background",
+        dependencies: ["clsx", "tailwind-merge"],
+        files: [
+            "DottedGlowBackground.vue"
+        ]
+    },
 ];
 
 const build = () => {

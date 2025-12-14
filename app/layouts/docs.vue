@@ -34,6 +34,7 @@ const navGroups = [
     icon: ImageIcon,
     items: [
       { label: 'Ambient Grid', to: '/docs/backgrounds/ambient-grid' },
+      { label: 'Dotted Glow', to: '/docs/backgrounds/dotted-glow-background' },
     ]
   }
 ]
