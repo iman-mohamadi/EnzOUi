@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useElementSize } from '@vueuse/core'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -10,6 +11,11 @@ interface Props {
   interactive?: boolean
   borderColor?: string
   fillColor?: string
+  /**
+   * If true, automatically calculates rows and columns to fill the parent container.
+   * Ignores 'rows' and 'cols' props.
+   */
+  fill?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -19,13 +25,30 @@ const props = withDefaults(defineProps<Props>(), {
   interactive: true,
   borderColor: 'var(--cell-border-color)',
   fillColor: 'var(--cell-fill-color)',
+  fill: false,
 })
 
+const containerRef = ref<HTMLElement | null>(null)
+const { width, height } = useElementSize(containerRef)
 const rippleKey = ref(0)
 const clickedCell = ref<{ row: number; col: number } | null>(null)
 
-// Generate cell data
-const totalCells = computed(() => props.rows * props.cols)
+// Calculate grid dimensions
+const calculatedCols = computed(() => {
+  if (props.fill && width.value > 0) {
+    return Math.ceil(width.value / props.cellSize)
+  }
+  return props.cols
+})
+
+const calculatedRows = computed(() => {
+  if (props.fill && height.value > 0) {
+    return Math.ceil(height.value / props.cellSize)
+  }
+  return props.rows
+})
+
+const totalCells = computed(() => calculatedRows.value * calculatedCols.value)
 
 const onCellClick = (row: number, col: number) => {
   if (!props.interactive) return
@@ -34,8 +57,9 @@ const onCellClick = (row: number, col: number) => {
 }
 
 const getCellStyle = (idx: number) => {
-  const row = Math.floor(idx / props.cols)
-  const col = idx % props.cols
+  const colCount = calculatedCols.value
+  const row = Math.floor(idx / colCount)
+  const col = idx % colCount
 
   if (!clickedCell.value) return {}
 
@@ -56,6 +80,7 @@ const getCellStyle = (idx: number) => {
 
 <template>
   <div
+      ref="containerRef"
       :class="cn(
       'absolute inset-0 h-full w-full',
       '[--cell-border-color:var(--color-neutral-300)] [--cell-fill-color:var(--color-neutral-100)] [--cell-shadow-color:var(--color-neutral-500)]',
@@ -71,10 +96,10 @@ const getCellStyle = (idx: number) => {
           'grid mx-auto'
         )"
           :style="{
-          gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
-          gridTemplateRows: `repeat(${rows}, ${cellSize}px)`,
-          width: `${cols * cellSize}px`,
-          height: `${rows * cellSize}px`,
+          gridTemplateColumns: `repeat(${calculatedCols}, ${cellSize}px)`,
+          gridTemplateRows: `repeat(${calculatedRows}, ${cellSize}px)`,
+          width: `${calculatedCols * cellSize}px`,
+          height: `${calculatedRows * cellSize}px`,
         }"
       >
         <div
@@ -90,7 +115,7 @@ const getCellStyle = (idx: number) => {
             borderColor: borderColor,
             ...getCellStyle(idx)
           }"
-            @click="onCellClick(Math.floor(idx / cols), idx % cols)"
+            @click="onCellClick(Math.floor(idx / calculatedCols), idx % calculatedCols)"
         ></div>
       </div>
     </div>
@@ -115,7 +140,6 @@ const getCellStyle = (idx: number) => {
   animation: cell-ripple var(--duration) linear var(--delay) forwards;
 }
 
-/* Fallback for mask-radial if not using Tailwind plugin or custom config */
 .mask-radial-from-20% {
   mask-image: radial-gradient(circle at center, black 20%, transparent 100%);
   -webkit-mask-image: radial-gradient(circle at center, black 20%, transparent 100%);
