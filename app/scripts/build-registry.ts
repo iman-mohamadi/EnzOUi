@@ -67,6 +67,13 @@ const COMPONENTS = [
             "DottedGlowBackground.vue"
         ]
     },
+    {
+        name: "background-ripple-effect",
+        dependencies: ["clsx", "tailwind-merge"],
+        files: [
+            "BackgroundRippleEffect.vue"
+        ]
+    },
 ];
 
 const build = () => {

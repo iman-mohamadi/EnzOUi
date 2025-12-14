@@ -35,6 +35,7 @@ const navGroups = [
     items: [
       { label: 'Ambient Grid', to: '/docs/backgrounds/ambient-grid' },
       { label: 'Dotted Glow', to: '/docs/backgrounds/dotted-glow-background' },
+      { label: 'Ripple Effect', to: '/docs/backgrounds/background-ripple-effect' },
     ]
   }
 ]
