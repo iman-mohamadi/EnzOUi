@@ -53,6 +53,13 @@ const COMPONENTS = [
             "BarVisualizer.vue"
         ]
     },
+    {
+        name: "tree",
+        dependencies: [],
+        files: [
+            "Tree.vue"
+        ]
+    },
 ];
 
 const build = () => {
