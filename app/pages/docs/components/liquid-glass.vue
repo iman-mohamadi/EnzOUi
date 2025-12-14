@@ -84,7 +84,7 @@ const previewCode = `<template>
     <div class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20" />
     <h1 class="text-9xl font-bold opacity-10 absolute top-10 left-10">REFRACT</h1>
 
-    <LiquidGlass class="w-64 h-40">
+    <LiquidGlass class="w-64 h-40" :radius="24" :blur="15" :scale="-40" :lightness="30" :gOffset="10" :bOffset="10">
       <div class="flex items-center justify-center h-full w-full bg-white/5 p-6">
         <p class="text-white font-medium">Drag me around!</p>
       </div>
@@ -135,7 +135,7 @@ const usageCode = `<template>
               }"
                 class="absolute z-20 cursor-grab active:cursor-grabbing will-change-transform"
             >
-              <LiquidGlass class="w-72 h-48" :radius="24">
+              <LiquidGlass class="w-72 h-48" :radius="24" :blur="15" :scale="-40" :lightness="30" :gOffset="10" :bOffset="10">
                 <div class="h-full w-full flex flex-col justify-between p-6 bg-white/5">
                   <div class="flex justify-between items-start">
                     <div class="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
